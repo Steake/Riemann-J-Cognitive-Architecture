@@ -12,13 +12,14 @@ from collections import deque
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal
-from textual.widgets import Header, Footer, Static, Log, Input, Sparkline
 from textual.reactive import reactive
+from textual.widgets import Footer, Header, Input, Log, Sparkline, Static
 
 from .architecture import CognitiveWorkspace
+from .config import *
 from .pn_driver import PNDriverRiemannZeta, PredictionErrorSignal
 from .shared_resources import global_workspace
-from .config import *
+
 
 class TUI(App):
     TITLE = "Riemann-J Cognitive Architecture v4.0"
@@ -44,7 +45,11 @@ class TUI(App):
         yield Header()
         with Container(id="main_container"):
             with Horizontal(id="dashboard"):
-                yield Sparkline(self.pn_history, id="pn_sparkline", summary_function=lambda data: f"PN: {data[-1]:.3f}")
+                yield Sparkline(
+                    self.pn_history,
+                    id="pn_sparkline",
+                    summary_function=lambda data: f"PN: {data[-1]:.3f}",
+                )
                 yield Static(id="status_display")
             yield Log(id="conversation_log", auto_scroll=True)
             yield Input(placeholder="Type your message...", id="user_input")
@@ -81,7 +86,7 @@ class TUI(App):
         else:
             self.system_status = "NOMINAL"
             self.status_style = "green"
-            
+
         status_text = (
             f"User: [bold]{self.current_user}[/bold]\n"
             f"Status: [{self.status_style}]{self.system_status}[/{self.status_style}]\n"
@@ -93,14 +98,20 @@ class TUI(App):
     def check_workspace_queue(self) -> None:
         """Check for and process high-priority J-Shift messages."""
         try:
-            priority, message = global_workspace.get_nowait()
+            priority, counter, message = global_workspace.get_nowait()
             if isinstance(message, PredictionErrorSignal) and message.p_n > PN_THRESHOLD:
                 log = self.query_one(Log)
-                log.write_line(f"[bold red blink]>> J-SHIFT TRIGGERED! PN = {message.p_n:.4f} <<[/bold red blink]")
+                log.write_line(
+                    f"[bold red blink]>> J-SHIFT TRIGGERED! PN = {message.p_n:.4f} <<[/bold red blink]"
+                )
                 state_obj = self.workspace._j_operator_resolve(message)
                 self.workspace.log_state(state_obj)
-                response = self.workspace.symbolic_interface.decoder(state_obj.latent_representation)
-                log.write_line(f"[bold yellow]System Internal Response ({state_obj.status}):[/bold yellow] {response}")
+                response = self.workspace.symbolic_interface.decoder(
+                    state_obj.latent_representation
+                )
+                log.write_line(
+                    f"[bold yellow]System Internal Response ({state_obj.status}):[/bold yellow] {response}"
+                )
         except queue.Empty:
             pass
 
@@ -111,14 +122,14 @@ class TUI(App):
         log.write_line(f"[bold]You >[/bold] {user_input}")
         event.input.clear()
 
-        if user_input.lower() == '/exit':
+        if user_input.lower() == "/exit":
             self.pn_driver.is_running = False
             self.workspace.close()
             self.exit()
             return
-        
-        if user_input.startswith('/switch '):
-            self.current_user = user_input.split(' ', 1)[1]
+
+        if user_input.startswith("/switch "):
+            self.current_user = user_input.split(" ", 1)[1]
             log.write_line(f"[bold green]Switched to user: {self.current_user}[/bold green]")
             return
 
@@ -130,12 +141,16 @@ class TUI(App):
         response, state_obj = self.workspace.process_user_input(self.current_user, user_input)
         self.workspace.log_state(state_obj)
         # Use call_from_thread to safely update UI from another thread
-        self.call_from_thread(self.query_one(Log).write_line, f"[bold cyan]Agent:[/bold cyan] {response}")
+        self.call_from_thread(
+            self.query_one(Log).write_line, f"[bold cyan]Agent:[/bold cyan] {response}"
+        )
+
 
 def main():
     """Main entry point for the Riemann-J TUI application."""
     app = TUI()
     app.run()
+
 
 if __name__ == "__main__":
     main()

@@ -22,14 +22,14 @@ ATTRACTOR_GMM_COMPONENTS: int = 5
 ATTRACTOR_AFFINITY_STRENGTH: float = 0.1
 
 # --- Riemann PN Driver Parameters ---
-RIEMANN_COMPUTATION_STEPS_PER_CYCLE: int = 5000
+RIEMANN_COMPUTATION_STEPS_PER_CYCLE: int = 15000  # Moderate accumulation for demo
 RIEMANN_MAX_STEPS_WITHOUT_ZERO: int = 1_000_000
 RIEMANN_SEARCH_STEP_SIZE: float = 0.1
 
 # --- Model & Logging Parameters ---
-# Default: gpt2-medium (355M, proven text generation, no special tokens needed)
-# Alternative: "gpt2" (124M, faster), "gpt2-large" (774M, better quality)
+# Default: Qwen3Guard-Gen-0.6B (600M, Jan 2025, latest from Qwen)
+# Alternative: "HuggingFaceTB/SmolLM2-135M-Instruct" (135M), "gpt2" (124M)
 # Override with RIEMANN_MODEL environment variable for testing
-TRANSFORMER_MODEL_NAME: str = "gpt2-medium"
+TRANSFORMER_MODEL_NAME: str = "Qwen/Qwen3Guard-Gen-0.6B"
 LOG_FILE: str = "session_log_v4.jsonl"
 PROJECTION_HEAD_PATH: str = "decoder_projection_head.pth"

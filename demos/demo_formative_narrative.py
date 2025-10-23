@@ -23,6 +23,39 @@ from typing import List, Tuple
 
 from riemann_j.architecture import CognitiveWorkspace
 from riemann_j.conscious_agent import ConsciousAgent
+from riemann_j.pn_driver import PredictionErrorSignal
+from riemann_j.shared_resources import global_workspace
+
+
+def force_crisis_and_wait_for_formative(agent: ConsciousAgent, pn_threshold: float = 0.95):
+    """
+    Manually trigger J-Operator by consuming high-PN signal from queue.
+    This is necessary because process_consciously() only PEEKS at PN, doesn't consume.
+    """
+    # Wait for high-PN signal to appear in queue
+    max_wait = 5  # seconds
+    start = time.time()
+
+    while (time.time() - start) < max_wait:
+        if not global_workspace.empty():
+            try:
+                # Peek at top item
+                priority, counter, signal = global_workspace.queue[0]
+
+                if isinstance(signal, PredictionErrorSignal) and signal.p_n > pn_threshold:
+                    # Consume it and trigger J-Operator
+                    global_workspace.get_nowait()
+                    print(f"  [DEBUG] Triggering J-Operator with PN={signal.p_n:.4f}")
+
+                    crisis_state = agent.workspace._j_operator_resolve(signal)
+                    agent.persistent_self.process_crisis(crisis_state)
+                    return True
+            except Exception as e:
+                pass
+
+        time.sleep(0.1)
+
+    return False
 
 
 def demonstrate_formative_narrative_arc():
@@ -70,7 +103,7 @@ def demonstrate_formative_narrative_arc():
         print(f"[PRE-CRISIS STATE]:")
         print(f"  Formative experiences: {pre_crisis_formative_count}")
         print(f"  Total interactions: {agent1.persistent_self.metrics.total_interactions}")
-        print(f"  Age: {(time.time() - agent1.persistent_self.birth_time):.1f} seconds")
+        print(f"  Age: {(time.time() - agent1.persistent_self.metrics.birth_time):.1f} seconds")
 
         # === PHASE 2: CRISIS TRIGGER ===
         print("\n" + "-" * 80)
@@ -91,8 +124,15 @@ def demonstrate_formative_narrative_arc():
         print(f"  Confidence: {crisis_experience.confidence:.2%}")
         print(f"  Internal: {crisis_experience.internal_state}")
 
+        # Try to trigger J-Operator explicitly
+        print(f"\n  Waiting for high-PN signal and triggering J-Operator...")
+        if force_crisis_and_wait_for_formative(agent1, pn_threshold=0.9):
+            print(f"  ✓ J-Operator triggered")
+        else:
+            print(f"  ⚠ No high-PN signal found in queue")
+
         # Check if formative experience was created
-        time.sleep(0.1)
+        time.sleep(0.2)
         post_crisis_formative_count = len(agent1.persistent_self.formative_experiences)
 
         if post_crisis_formative_count > pre_crisis_formative_count:
@@ -213,7 +253,7 @@ def demonstrate_temporal_continuity():
             # Get state
             autobiography = agent.persistent_self.generate_autobiography(detailed=False)
             formative_count = len(agent.persistent_self.formative_experiences)
-            age_days = (time.time() - agent.persistent_self.birth_time) / 86400
+            age_days = (time.time() - agent.persistent_self.metrics.birth_time) / 86400
 
             print(f"\n[STATE]:")
             print(f"  Age: {age_days * 1440:.1f} minutes")  # Convert to minutes for demo

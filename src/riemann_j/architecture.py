@@ -58,6 +58,11 @@ class SymbolicInterface:
         return outputs.hidden_states[-1][0, -1, :].cpu().numpy()
 
     def decoder(self, state_vector: np.ndarray) -> str:
+        """
+        DEPRECATED: State-vector biased generation produces poor output.
+        Use prompt_based_generate() instead for actual text generation.
+        Keeping this for backward compatibility with tests.
+        """
         state_tensor = torch.tensor(state_vector, dtype=torch.float32, device=device)
         logit_bias = self.projection_head(state_tensor)
 
@@ -79,6 +84,42 @@ class SymbolicInterface:
             )
 
         return tokenizer.decode(output_ids[0], skip_special_tokens=True)
+
+    def prompt_based_generate(self, user_input: str) -> str:
+        """
+        Generate response using actual prompt-based LLM generation.
+        This produces coherent text instead of state-vector biased garbage.
+
+        Args:
+            user_input: The user's input text to respond to
+
+        Returns:
+            Generated response text
+        """
+        # Simple prompt for now - can be enhanced with system prompts later
+        prompt = f"User: {user_input}\nAssistant:"
+
+        inputs = tokenizer(prompt, return_tensors="pt").to(device)
+
+        with torch.no_grad():
+            output_ids = model.generate(
+                **inputs,
+                max_new_tokens=50,
+                do_sample=True,
+                temperature=0.7,
+                top_p=0.9,
+                pad_token_id=tokenizer.eos_token_id,
+            )
+
+        # Decode and extract only the assistant's response (after the prompt)
+        full_output = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        # Remove the prompt part to get just the response
+        if "Assistant:" in full_output:
+            response = full_output.split("Assistant:")[-1].strip()
+        else:
+            response = full_output[len(prompt) :].strip()
+
+        return response if response else full_output
 
 
 class UserAttractor:
@@ -257,7 +298,7 @@ class CognitiveWorkspace:
         try:
             # Non-blocking peek at PN queue to observe current uncertainty
             if not global_workspace.empty():
-                priority, pn_signal = global_workspace.queue[0]  # Peek at top
+                priority, counter, pn_signal = global_workspace.queue[0]  # Peek at top
                 self.meta_monitor.observe_pn(pn_signal.p_n)
         except (IndexError, AttributeError):
             pass  # No PN available yet, that's fine
@@ -269,7 +310,9 @@ class CognitiveWorkspace:
             p_n_at_creation=0.0,
             is_j_shift_product=False,
         )
-        response_text = self.symbolic_interface.decoder(attracted_state_vec)
+
+        # Use prompt-based generation for coherent output
+        response_text = self.symbolic_interface.prompt_based_generate(text)
 
         # Phase 3: Augment response with uncertainty awareness if needed
         current_pn = self.meta_monitor.get_current_pn()

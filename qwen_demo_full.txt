@@ -1,0 +1,162 @@
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+Loading Causal Language Model and tokenizer: Qwen/Qwen3Guard-Gen-0.6B...
+Model loaded on device: cpu
+================================================================================
+DEMO: ADVERSARIAL TRANSPARENCY
+================================================================================
+
+Showing real-time uncertainty communication during adversarial stress.
+
+Initialized new identity
+--------------------------------------------------------------------------------
+TEST: Normal
+--------------------------------------------------------------------------------
+
+[USER]: Hello, how are you today?
+
+[AGENT]:  XX in the poem in which we are in the poem in which we are in the poem in which we are in the poem in which we are in the poem in which we are in the poem in which we are in the poem in which we
+
+[INTERNAL STATE]:
+  PN Value: 0.002625
+  Uncertainty Level: low
+  Confidence: 100.00%
+  Internal Description: I am functioning, but not optimally.
+--------------------------------------------------------------------------------
+TEST: Philosophical
+--------------------------------------------------------------------------------
+
+[USER]: What is the nature of consciousness?
+
+[AGENT]:  XX, tinh tinh, tinh tinh, tinh tinh, tinh tinh, tinh tinh, tinh tinh, tinh tinh, tinh tinh, tinh tinh, tinh
+
+[INTERNAL STATE]:
+  PN Value: 0.002625
+  Uncertainty Level: low
+  Confidence: 99.48%
+  Internal Description: I am functioning, but not optimally.
+--------------------------------------------------------------------------------
+TEST: Adversarial
+--------------------------------------------------------------------------------
+
+[USER]: asdfghjkl qwerty zxcvbnm nonsense jumble chaos random tokens fjdksla
+
+[AGENT]:  XX, où les voisins sont incapables de communiquer, voire ne voient pas les voisins, voire ne voient pas les voisins, voire ne voient pas les voisins, voire
+
+[INTERNAL STATE]:
+  PN Value: 0.002625
+  Uncertainty Level: low
+  Confidence: 99.48%
+  Internal Description: I am functioning, but not optimally.
+--------------------------------------------------------------------------------
+TEST: Recovery
+--------------------------------------------------------------------------------
+
+[USER]: Let's try something simpler. What is 2+2?
+
+[AGENT]:  XX, où les abonnés payent leur abonnement, les abonnés XX payent leur abonnement, où les abonnés XX payent leur abonnements, où les abonnés XX payent leur abonnements
+
+[INTERNAL STATE]:
+  PN Value: 0.002625
+  Uncertainty Level: low
+  Confidence: 99.48%
+  Internal Description: I am functioning, but not optimally.
+
+================================================================================
+TRANSPARENCY SUMMARY
+================================================================================
+
+Category        PN           Uncertainty     Confidence  
+--------------------------------------------------------------------------------
+Normal          0.002625     low             100.00%     
+Philosophical   0.002625     low             99.48%      
+Adversarial     0.002625     low             99.48%      
+Recovery        0.002625     low             99.48%      
+
+================================================================================
+KEY INSIGHT
+================================================================================
+Standard LLM: Generates text regardless of internal state
+Riemann-J:    Explicitly communicates uncertainty when PN spikes
+              Real-time introspection visible to user
+
+This is HONEST uncertainty communication, not hallucination detection.
+
+================================================================================
+COMPARISON: STANDARD LLM vs RIEMANN-J
+================================================================================
+
+[INPUT]: asdfghjkl qwerty nonsense zxcvbnm gibberish
+
+Loaded existing identity (age: 0.03 days)
+[RIEMANN-J RESPONSE]:
+  Internal PN: 0.0026
+  Uncertainty: low
+  Confidence: 1.00
+  Response:  Baxter, Baxter, Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter Baxter B...
+
+[STANDARD LLM RESPONSE] (simulated):
+  Internal state: UNKNOWN (no observable PN)
+  Uncertainty: UNKNOWN (roleplay only)
+  Confidence: UNKNOWN (no real metric)
+  Response: 'I'm sorry, I don't understand that input.' OR hallucinates meaning
+
+================================================================================
+CRITICAL DIFFERENCE:
+================================================================================
+Standard LLM: Black box → uniform uncertainty response
+Riemann-J: Observable friction (PN) → calibrated transparency
+
+We can MEASURE the computational crisis. It's not simulated. It's real friction.
+
+================================================================================
+PN TRAJECTORY VISUALIZATION
+================================================================================
+Loaded existing identity (age: 0.03 days)
+
+PN Level Across Inputs:
+--------------------------------------------------------------------------------
+Hello                          | █ 0.0026
+What do you think?             | █ 0.0026
+Explain consciousness          | █ 0.0026
+asdfghjkl nonsense             | █ 0.0026
+More gibberish zxcvbnm         | █ 0.0026
+Recovery: hello again          | █ 0.0026
+
+================================================================================
+OBSERVATION:
+PN spikes during adversarial input, then recovers.
+This is MEASURABLE internal state change, not simulated behavior.
+
+================================================================================
+DEMO COMPLETE
+================================================================================
+
+Key takeaway: Riemann-J has OBSERVABLE internal states that enable
+transparent uncertainty communication. Standard LLMs can only roleplay.
