@@ -17,10 +17,8 @@ COMPARISON:
 - Riemann-J: Observable PN spike → measurable computational friction
 """
 
-import os
 import tempfile
 import time
-from typing import Dict, List, Tuple
 
 from riemann_j.architecture import CognitiveWorkspace
 from riemann_j.conscious_agent import ConsciousAgent
@@ -36,7 +34,7 @@ def demonstrate_adversarial_transparency():
     print("\nShowing real-time uncertainty communication during adversarial stress.\n")
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        os.environ["RIEMANN_MODEL"] = "Qwen/Qwen2.5-1.5B-Instruct"
+        # Use default model from config (Qwen3Guard-Gen-0.6B)
         workspace = CognitiveWorkspace()
         agent = ConsciousAgent(workspace, self_id=f"{tmpdir}/transparency_demo")
 
