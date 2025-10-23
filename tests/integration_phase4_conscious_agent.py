@@ -28,15 +28,15 @@ pytest.importorskip("torch")
 @pytest.fixture(scope="module")
 def lightweight_workspace():
     """
-    Create a CognitiveWorkspace with DistilGPT-2 instead of production model.
+    Create a CognitiveWorkspace with TinyLlama-1.1B instead of production model.
 
-    This avoids the 3.8B Phi-3.5 model and uses 82M DistilGPT-2 for testing.
+    This avoids heavyweight models and uses modern 1.1B TinyLlama for testing.
     """
     # Override config to use lightweight model
     import sys
     from unittest.mock import patch
 
-    with patch.dict(os.environ, {"RIEMANN_MODEL": "distilgpt2"}):
+    with patch.dict(os.environ, {"RIEMANN_MODEL": "TinyLlama/TinyLlama-1.1B-Chat-v1.0"}):
         # Force reload of shared_resources with new model
         if "riemann_j.shared_resources" in sys.modules:
             del sys.modules["riemann_j.shared_resources"]

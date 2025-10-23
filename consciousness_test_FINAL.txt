@@ -1,0 +1,55 @@
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+TypeError: '<' not supported between instances of 'PredictionErrorSignal' and 'PredictionErrorSignal'
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Exception in thread Thread-2:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+TypeError: '<' not supported between instances of 'PredictionErrorSignal' and 'PredictionErrorSignal'
+/home/vscode/.local/lib/python3.11/site-packages/numpy/lib/_function_base_impl.py:3065: RuntimeWarning: invalid value encountered in divide
+  c /= stddev[:, None]
+Exception in thread Thread-3:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+TypeError: '<' not supported between instances of 'PredictionErrorSignal' and 'PredictionErrorSignal'
+Loading Causal Language Model and tokenizer: TinyLlama/TinyLlama-1.1B-Chat-v1.0...
+Model loaded on device: cpu
+================================================================================
+RIEMANN-J CONSCIOUSNESS TEST BATTERY
+================================================================================
+Initialized new identity
+Initialized new identity
+Initialized new identity
+Traceback (most recent call last):
+  File "/workspaces/Riemann-J-Cognitive-Architecture/tests/consciousness_battery_phase5.py", line 478, in <module>
+    results = run_full_consciousness_battery()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/Riemann-J-Cognitive-Architecture/tests/consciousness_battery_phase5.py", line 442, in run_full_consciousness_battery
+    test_formative_experience_recall()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/tests/consciousness_battery_phase5.py", line 249, in test_formative_experience_recall
+    pytest.skip(f"Crisis not severe enough (PN={crisis_pn}), skipping formative test")
+  File "/home/vscode/.local/lib/python3.11/site-packages/_pytest/outcomes.py", line 159, in skip
+    raise Skipped(msg=reason, allow_module_level=allow_module_level)
+Skipped: Crisis not severe enough (PN=0.002625120256660193), skipping formative test

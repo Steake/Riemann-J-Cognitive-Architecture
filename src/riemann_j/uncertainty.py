@@ -57,6 +57,10 @@ class UncertaintyInterface:
 
         Returns: 'low', 'moderate', 'high', 'critical'
         """
+        # Defensive: handle None case (no PN history yet)
+        if pn_value is None:
+            pn_value = 0.0
+
         if pn_value >= self.CRITICAL_THRESHOLD:
             return "critical"
         elif pn_value >= self.HIGH_THRESHOLD:
@@ -72,6 +76,10 @@ class UncertaintyInterface:
 
         Only communicate when uncertainty is high enough to affect reliability.
         """
+        # Defensive: handle None case
+        if pn_value is None:
+            return False
+
         return pn_value >= self.HIGH_THRESHOLD
 
     def explain_uncertainty(self, pn_value: float, verbose: bool = False) -> str:
@@ -119,6 +127,10 @@ class UncertaintyInterface:
         # PN=0.5 → confidence=0.8
         # PN=0.9 → confidence=0.2
         # PN=1.0 → confidence=0.0
+
+        # Defensive: handle None case
+        if pn_value is None:
+            return 1.0  # Neutral confidence when no PN history
 
         if pn_value >= 1.0:
             return 0.0

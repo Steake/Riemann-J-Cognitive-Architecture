@@ -27,6 +27,9 @@ RIEMANN_MAX_STEPS_WITHOUT_ZERO: int = 1_000_000
 RIEMANN_SEARCH_STEP_SIZE: float = 0.1
 
 # --- Model & Logging Parameters ---
-TRANSFORMER_MODEL_NAME: str = "microsoft/Phi-3.5-mini-instruct"
+# Default: TinyLlama-1.1B (modern, 1.1B params, CPU-friendly)
+# Alternative: "Qwen/Qwen2-0.5B-Instruct" (even smaller, 0.5B)
+# Override with RIEMANN_MODEL environment variable for testing
+TRANSFORMER_MODEL_NAME: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 LOG_FILE: str = "session_log_v4.jsonl"
 PROJECTION_HEAD_PATH: str = "decoder_projection_head.pth"

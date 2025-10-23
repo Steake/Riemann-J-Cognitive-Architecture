@@ -10,16 +10,14 @@ import tempfile
 import pytest
 
 from riemann_j.architecture import CognitiveWorkspace
-from riemann_j.config import Config
 from riemann_j.conscious_agent import ConsciousAgent
 
 
 @pytest.fixture
 def lightweight_workspace():
     """Create workspace with lightweight model for fast testing."""
-    os.environ["RIEMANN_MODEL"] = "distilgpt2"
-    config = Config()
-    workspace = CognitiveWorkspace(config)
+    os.environ["RIEMANN_MODEL"] = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    workspace = CognitiveWorkspace()
     return workspace
 
 

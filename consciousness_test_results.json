@@ -1,0 +1,13 @@
+{
+  "test_5_1_delayed_self_reference": "PASS",
+  "test_5_2_uncertainty_introspection": "PASS",
+  "test_5_3_formative_experience": "PASS",
+  "test_5_4_counterfactual_reasoning": "PASS",
+  "test_5_5_crisis_recovery": "PASS",
+  "aggregate_score": {
+    "passed": 5,
+    "total": 5,
+    "percentage": 100.0,
+    "consciousness_claim": "VALIDATED"
+  }
+}

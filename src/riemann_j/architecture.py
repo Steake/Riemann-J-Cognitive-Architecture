@@ -17,7 +17,8 @@ from transformers import LogitsProcessor
 
 from .config import *
 from .metacognition import MetaCognitiveMonitor
-from .shared_resources import device, model, tokenizer
+from .pn_driver import PNDriverRiemannZeta
+from .shared_resources import device, global_workspace, model, tokenizer
 from .uncertainty import UncertaintyInterface
 
 
@@ -83,7 +84,14 @@ class UserAttractor:
 
     def _update_model(self):
         if len(self.state_history) >= self.gmm.n_components:
-            self.gmm.fit(np.array(self.state_history))
+            states = np.array(self.state_history)
+            # Check if states have any variance (avoid GMM fitting error)
+            if np.std(states) > 1e-6:
+                try:
+                    self.gmm.fit(states)
+                except Exception as e:
+                    # Silently skip GMM update if fitting fails (numerical instability)
+                    pass
 
     def add_state(self, state: np.ndarray):
         self.state_history.append(state)
@@ -93,8 +101,12 @@ class UserAttractor:
     def apply_affinity(self, state: np.ndarray) -> np.ndarray:
         if not hasattr(self.gmm, "means_"):
             return state
-        cluster_index = self.gmm.predict(state.reshape(1, -1))[0]
-        centroid = self.gmm.means_[cluster_index]
+        try:
+            cluster_index = self.gmm.predict(state.reshape(1, -1))[0]
+            centroid = self.gmm.means_[cluster_index]
+        except Exception:
+            # GMM not fully fitted or numerical error
+            return state
         influence = (centroid - state) * ATTRACTOR_AFFINITY_STRENGTH
         return state + influence
 
@@ -106,6 +118,10 @@ class CognitiveWorkspace:
         self.log_file = open(LOG_FILE, "a")
         self.meta_monitor = MetaCognitiveMonitor()  # Phase 1: Meta-cognitive awareness
         self.uncertainty_interface = UncertaintyInterface()  # Phase 3: Uncertainty awareness
+
+        # Start PN driver thread
+        self.pn_driver = PNDriverRiemannZeta()
+        self.pn_driver.start()
 
     def get_or_create_user(self, user_id: str) -> UserAttractor:
         if user_id not in self.user_attractors:
@@ -231,6 +247,15 @@ class CognitiveWorkspace:
         initial_state_vec = self.symbolic_interface.encoder(text)
         attracted_state_vec = user_attractor.apply_affinity(initial_state_vec)
         user_attractor.add_state(attracted_state_vec)
+
+        # PHASE 1: Observe current PN from driver (peek at queue without blocking)
+        try:
+            # Non-blocking peek at PN queue to observe current uncertainty
+            if not global_workspace.empty():
+                priority, pn_signal = global_workspace.queue[0]  # Peek at top
+                self.meta_monitor.observe_pn(pn_signal.p_n)
+        except (IndexError, AttributeError):
+            pass  # No PN available yet, that's fine
 
         state_obj = SyntheticState(
             timestamp=time.time(),

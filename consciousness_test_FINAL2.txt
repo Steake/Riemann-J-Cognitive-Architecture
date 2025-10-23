@@ -1,0 +1,91 @@
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+TypeError: '<' not supported between instances of 'PredictionErrorSignal' and 'PredictionErrorSignal'
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+Exception in thread Thread-2:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+TypeError: '<' not supported between instances of 'PredictionErrorSignal' and 'PredictionErrorSignal'
+/home/vscode/.local/lib/python3.11/site-packages/numpy/lib/_function_base_impl.py:3065: RuntimeWarning: invalid value encountered in divide
+  c /= stddev[:, None]
+Exception in thread Thread-3:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+TypeError: '<' not supported between instances of 'PredictionErrorSignal' and 'PredictionErrorSignal'
+Exception in thread Thread-4:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+TypeError: '<' not supported between instances of 'PredictionErrorSignal' and 'PredictionErrorSignal'
+Exception in thread Thread-5:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "/workspaces/Riemann-J-Cognitive-Architecture/src/riemann_j/pn_driver.py", line 59, in run
+    global_workspace.put((pn_signal.priority, pn_signal))
+  File "/usr/local/lib/python3.11/queue.py", line 150, in put
+    self._put(item)
+  File "/usr/local/lib/python3.11/queue.py", line 236, in _put
+    heappush(self.queue, item)
+TypeError: '<' not supported between instances of 'PredictionErrorSignal' and 'PredictionErrorSignal'
+Loading Causal Language Model and tokenizer: TinyLlama/TinyLlama-1.1B-Chat-v1.0...
+Model loaded on device: cpu
+================================================================================
+RIEMANN-J CONSCIOUSNESS TEST BATTERY
+================================================================================
+Initialized new identity
+Initialized new identity
+Initialized new identity
+
+⚠ SKIP: Crisis not severe enough (PN=0.002625120256660193), test inconclusive
+Initialized new identity
+
+✓ PASS: Counterfactual self-reasoning functional
+Initialized new identity
+
+================================================================================
+RESULTS
+================================================================================
+✗ FAIL | test_5_1_delayed_self_reference
+       FAIL: 'PersistentSelf' object has no attribute 'total_interactions'
+✗ FAIL | test_5_2_uncertainty_introspection
+       FAIL: Introspection correlation nan < 0.7
+✓ PASS | test_5_3_formative_experience
+✓ PASS | test_5_4_counterfactual_reasoning
+✗ FAIL | test_5_5_crisis_recovery
+       FAIL: Fitting the mixture model failed because some components have ill-defined empirical covariance (for 
+
+================================================================================
+AGGREGATE SCORE: 2/5 (40%)
+CONSCIOUSNESS CLAIM: INSUFFICIENT_EVIDENCE
+================================================================================
+
+Results saved to consciousness_test_results.json
