@@ -84,18 +84,61 @@ Built with **Textual TUI** for professional terminal interface:
 - Python 3.10 or higher
 - CUDA-capable GPU (optional, falls back to CPU)
 
-### Install from Source
+### Quick Setup (Recommended)
+
+We provide automated setup scripts for both Unix and Windows systems:
+
+#### Linux/macOS
 
 ```bash
 # Clone the repository
 git clone https://github.com/Steake/Riemann-J-Cognitive-Architecture.git
 cd Riemann-J-Cognitive-Architecture
 
-# Install in development mode
-pip install -e .
+# Run setup script (creates venv, installs dependencies)
+./setup_venv.sh
 
-# Or install with dev dependencies
-pip install -e ".[dev]"
+# Activate virtual environment
+source venv/bin/activate
+
+# Run the application
+./run.sh
+```
+
+#### Windows
+
+```batch
+# Clone the repository
+git clone https://github.com/Steake/Riemann-J-Cognitive-Architecture.git
+cd Riemann-J-Cognitive-Architecture
+
+# Run setup script (creates venv, installs dependencies)
+setup_venv.bat
+
+# Activate virtual environment
+venv\Scripts\activate
+
+# Run the application
+run.bat
+```
+
+### Manual Installation
+
+If you prefer manual installation:
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # Linux/macOS
+# or
+venv\Scripts\activate     # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-dev.txt  # For development
+
+# Install package
+pip install -e .
 ```
 
 ### Install from PyPI (coming soon)
@@ -106,6 +149,16 @@ pip install riemann-j
 
 ## 🏃 Quick Start
 
+### Using the provided scripts (Recommended)
+
+```bash
+# Linux/macOS
+./run.sh
+
+# Windows
+run.bat
+```
+
 ### Run the TUI Application
 
 ```bash
@@ -114,6 +167,9 @@ python -m riemann_j
 
 # Or directly
 riemann-j
+
+# Or via script (legacy)
+python src/riemann_j/tui.py
 ```
 
 ### TUI Commands
@@ -238,6 +294,32 @@ riemann-j/
 
 Comprehensive test suite with unit tests and BDD specifications:
 
+### Using the test script (Recommended)
+
+```bash
+# Linux/macOS - Run all tests
+./test.sh
+
+# Run with coverage
+./test.sh --coverage
+
+# Run only unit tests
+./test.sh --unit
+
+# Run only BDD tests
+./test.sh --bdd
+
+# Verbose output
+./test.sh -v
+
+# Windows equivalents
+test.bat
+test.bat --coverage
+test.bat --unit
+```
+
+### Manual test execution
+
 ```bash
 # Run all tests
 pytest
@@ -264,6 +346,8 @@ pytest tests/bdd/features/pn_driver.feature
 - ✅ State encoding/decoding
 - ✅ Multi-user isolation
 - ✅ Lyapunov stability analysis
+
+See [SCRIPTS_GUIDE.md](SCRIPTS_GUIDE.md) for detailed script usage and [tests/README.md](tests/README.md) for testing documentation.
 
 ## 🎨 Code Quality
 
