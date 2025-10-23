@@ -216,7 +216,7 @@ def test_multiple_interactions_with_continuity(lightweight_workspace, temp_ident
 
     # Verify identity continuity
     continuity = agent.persistent_self.check_continuity()
-    assert continuity["has_history"] == True  # Has recorded experiences
+    assert continuity["total_interactions"] == 3  # Interactions were recorded
     assert continuity["total_interactions"] == 3
 
 

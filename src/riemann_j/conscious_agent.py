@@ -86,6 +86,8 @@ class ConsciousAgent:
             (current_pn, state_description): PN value and natural language description
         """
         pn = self.meta_monitor.get_current_pn()
+        if pn is None:
+            pn = 0.0  # Default to zero if no PN history yet
         state_desc = self.meta_monitor.generate_self_report(verbose=False)
         return pn, state_desc
 
