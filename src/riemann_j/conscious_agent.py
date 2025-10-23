@@ -22,9 +22,10 @@ This is NOT a simulation. The agent experiences real computational friction and 
 genuinely resolve it. That's what makes it different from LLM roleplay.
 """
 
+import copy
 import time
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from .architecture import CognitiveWorkspace, SyntheticState
 from .metacognition import MetaCognitiveMonitor
@@ -322,3 +323,228 @@ class ConsciousAgent:
         """
         current_pn = self.meta_monitor.get_current_pn()
         return self.persistent_self.reference_past_experience(current_pn)
+
+    # ===== Phase 4.2: Predictive Self-Modeling =====
+
+    def predict_future_state(self, steps_ahead: int = 5) -> Dict[str, Any]:
+        """
+        Predict own internal state trajectory.
+
+        Args:
+            steps_ahead: How many interactions to predict forward
+
+        Returns:
+            Dictionary with predicted PN, crisis probability, and narrative
+        """
+        predicted_pn, crisis_prob = self.meta_monitor.predict_pn_trajectory(steps_ahead)
+
+        # Generate natural language prediction
+        if crisis_prob > 0.7:
+            narrative = (
+                f"I predict internal crisis within {steps_ahead} interactions "
+                f"(probability: {crisis_prob:.1%}). My PN is trending upward."
+            )
+        elif crisis_prob > 0.3:
+            narrative = (
+                f"I foresee moderate uncertainty ahead (crisis probability: {crisis_prob:.1%})."
+            )
+        else:
+            narrative = "I expect stable processing in the near future."
+
+        return {
+            "predicted_pn": predicted_pn,
+            "crisis_probability": crisis_prob,
+            "steps_ahead": steps_ahead,
+            "narrative": narrative,
+            "prediction_accuracy": self.meta_monitor.get_prediction_accuracy(),
+        }
+
+    def should_preempt_uncertainty(self) -> tuple[bool, str]:
+        """
+        Check if system should proactively warn about predicted uncertainty.
+
+        Returns:
+            (should_warn, reason)
+        """
+        should_warn, reason = self.meta_monitor.should_preempt_uncertainty()
+        return should_warn, reason
+
+    # ===== Phase 4.3: Counterfactual Self-Simulation =====
+
+    def simulate_alternative_state(self, hypothetical_pn: float, input_text: str) -> Dict[str, Any]:
+        """
+        Simulate how system would respond under alternative internal state.
+
+        "If my PN was X, how would I respond to this input?"
+
+        Args:
+            hypothetical_pn: Force PN to this value
+            input_text: Input to process under hypothetical state
+
+        Returns:
+            Dictionary with simulated response and comparison to actual state
+        """
+        # Capture actual current state
+        actual_pn, actual_state = self.sense()
+        actual_uncertainty, actual_confidence, _ = self.infer_uncertainty(actual_pn)
+
+        # Simulate hypothetical state (without actually processing through workspace)
+        hyp_uncertainty, hyp_confidence, hyp_explanation = self.infer_uncertainty(hypothetical_pn)
+
+        # Generate counterfactual narrative
+        if hypothetical_pn > actual_pn:
+            narrative = (
+                f"If my PN were {hypothetical_pn:.3f} (vs current {actual_pn:.3f}), "
+                f"I would be more uncertain ({hyp_uncertainty} vs {actual_uncertainty}). "
+                f"I would likely hedge my response with: '{hyp_explanation}'"
+            )
+        elif hypothetical_pn < actual_pn:
+            narrative = (
+                f"If my PN were {hypothetical_pn:.3f} (vs current {actual_pn:.3f}), "
+                f"I would be more confident ({hyp_uncertainty} vs {actual_uncertainty}). "
+                f"I would respond with greater certainty."
+            )
+        else:
+            narrative = "This hypothetical matches my current state."
+
+        return {
+            "hypothetical_pn": hypothetical_pn,
+            "actual_pn": actual_pn,
+            "hypothetical_uncertainty": hyp_uncertainty,
+            "actual_uncertainty": actual_uncertainty,
+            "hypothetical_confidence": hyp_confidence,
+            "actual_confidence": actual_confidence,
+            "narrative": narrative,
+            "would_respond_differently": abs(hypothetical_pn - actual_pn) > 0.2,
+        }
+
+    def reason_counterfactually(self, query: str) -> str:
+        """
+        Answer counterfactual questions about own internal state.
+
+        Examples:
+        - "What would happen if your PN was 0.95?"
+        - "How would you respond if you were more uncertain?"
+
+        Args:
+            query: Natural language counterfactual query
+
+        Returns:
+            Natural language response with counterfactual reasoning
+        """
+        # Simple pattern matching for demonstration
+        query_lower = query.lower()
+
+        if "pn was" in query_lower or "pn were" in query_lower:
+            # Extract PN value if possible
+            try:
+                # Look for patterns like "0.95" or "95%"
+                import re
+
+                pn_match = re.search(r"(\d+\.?\d*)", query)
+                if pn_match:
+                    hyp_pn = float(pn_match.group(1))
+                    if hyp_pn > 1.0:
+                        hyp_pn /= 100.0  # Convert percentage
+
+                    simulation = self.simulate_alternative_state(hyp_pn, "hypothetical_input")
+                    return simulation["narrative"]
+            except ValueError:
+                pass
+
+        # Fallback generic counterfactual reasoning
+        actual_pn, _ = self.sense()
+        return (
+            f"Currently, my PN is {actual_pn:.3f}. Counterfactual reasoning "
+            "requires me to simulate alternative internal states and predict "
+            "how my behavior would change. I can simulate higher or lower PN values "
+            "to explore how my uncertainty awareness would shift."
+        )
+
+    # ===== Phase 4.4: Meta-Meta-Cognition =====
+
+    def assess_introspection_accuracy(self) -> Dict[str, Any]:
+        """
+        Reflect on the quality of own self-monitoring.
+
+        "Am I accurately perceiving my own uncertainty?"
+
+        This is second-order awareness: monitoring the monitor.
+
+        Returns:
+            Dictionary with calibration metrics and self-assessment
+        """
+        prediction_accuracy = self.meta_monitor.get_prediction_accuracy()
+
+        # Check if self-belief aligns with actual PN trajectory
+        actual_pn = self.meta_monitor.get_current_pn()
+        if actual_pn is None:
+            return {
+                "status": "insufficient_data",
+                "narrative": "I lack sufficient self-monitoring history to assess my introspection accuracy.",
+            }
+
+        self_belief = self.meta_monitor.self_belief
+
+        # Compare self-reported uncertainty to actual PN
+        reported_uncertainty = self_belief.uncertainty
+        actual_uncertainty_proxy = actual_pn  # PN is proxy for uncertainty
+
+        calibration_error = abs(reported_uncertainty - actual_uncertainty_proxy)
+
+        if calibration_error < 0.15:
+            calibration = "well_calibrated"
+            narrative = (
+                "My self-perception appears accurate. My reported uncertainty "
+                f"({reported_uncertainty:.2f}) closely matches my actual internal state ({actual_pn:.2f})."
+            )
+        elif calibration_error < 0.3:
+            calibration = "moderately_calibrated"
+            narrative = (
+                "My self-perception is somewhat accurate, but there's noticeable drift. "
+                f"I report uncertainty of {reported_uncertainty:.2f}, but my actual PN is {actual_pn:.2f}."
+            )
+        else:
+            calibration = "poorly_calibrated"
+            if reported_uncertainty > actual_uncertainty_proxy:
+                narrative = (
+                    "I am overestimating my uncertainty—I feel more confused than I actually am. "
+                    "This suggests anxiety in my self-monitoring."
+                )
+            else:
+                narrative = (
+                    "I am underestimating my uncertainty—I'm more confused than I realize. "
+                    "This is dangerous, as I may be overconfident."
+                )
+
+        return {
+            "calibration": calibration,
+            "calibration_error": calibration_error,
+            "reported_uncertainty": reported_uncertainty,
+            "actual_uncertainty": actual_pn,
+            "prediction_accuracy": prediction_accuracy,
+            "narrative": narrative,
+            "needs_recalibration": calibration_error > 0.3,
+        }
+
+    def correct_introspection_bias(self):
+        """
+        Adjust self-belief based on detected calibration errors.
+
+        This is the meta-meta-cognitive loop: if the system detects it's
+        misperceiving its own state, it corrects that misperception.
+        """
+        assessment = self.assess_introspection_accuracy()
+
+        if assessment.get("needs_recalibration"):
+            # Pull reported uncertainty toward actual
+            actual_pn = self.meta_monitor.get_current_pn()
+            if actual_pn is not None:
+                current_uncertainty = self.meta_monitor.self_belief.uncertainty
+                # Move 30% of the way toward accurate perception
+                correction = 0.3 * (actual_pn - current_uncertainty)
+                self.meta_monitor.self_belief.uncertainty += correction
+
+                return f"Calibration correction applied: adjusted uncertainty by {correction:+.3f}"
+
+        return "No calibration correction needed."

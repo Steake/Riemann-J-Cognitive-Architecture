@@ -12,9 +12,10 @@ state, and can articulate these beliefs in natural language.
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+from sklearn.linear_model import LinearRegression
 
 
 @dataclass
@@ -97,6 +98,12 @@ class MetaCognitiveMonitor:
         self.total_observations = 0
         self.crisis_count = 0
         self.high_pn_count = 0
+
+        # Phase 4.2: Predictive modeling
+        self.prediction_model = LinearRegression()
+        self.prediction_errors = deque(maxlen=50)
+        self.predictions_made = 0
+        self.last_prediction = None
 
     def observe_pn(self, pn_value: float):
         """
@@ -338,3 +345,122 @@ class MetaCognitiveMonitor:
                 self.high_pn_count / self.total_observations if self.total_observations > 0 else 0
             ),
         }
+
+    # ===== Phase 4.2: Predictive Self-Modeling =====
+
+    def predict_pn_trajectory(self, steps_ahead: int = 5) -> Tuple[List[float], float]:
+        """
+        Predict future PN trajectory based on recent history.
+
+        Args:
+            steps_ahead: How many interactions to predict forward
+
+        Returns:
+            (predicted_pn_values, crisis_probability)
+        """
+        if len(self.pn_history) < 10:
+            # Not enough data, return neutral predictions
+            return [0.5] * steps_ahead, 0.0
+
+        # Extract recent PN values and timestamps
+        recent = list(self.pn_history)[-50:]  # Last 50 observations
+        pn_values = np.array([p["value"] for p in recent])
+        timestamps = np.array([p["timestamp"] for p in recent])
+
+        # Normalize time to steps
+        time_steps = np.arange(len(pn_values)).reshape(-1, 1)
+
+        # Fit linear model to recent trajectory
+        self.prediction_model.fit(time_steps, pn_values)
+
+        # Predict forward
+        future_steps = np.arange(len(pn_values), len(pn_values) + steps_ahead).reshape(-1, 1)
+        predicted_pn = self.prediction_model.predict(future_steps)
+
+        # Clip to valid range
+        predicted_pn = np.clip(predicted_pn, 0.0, 1.0)
+
+        # Calculate crisis probability (probability of exceeding 0.85)
+        crisis_threshold = 0.85
+        crisis_probability = np.mean(predicted_pn > crisis_threshold)
+
+        self.last_prediction = {
+            "predicted_pn": predicted_pn.tolist(),
+            "crisis_probability": float(crisis_probability),
+            "timestamp": time.time(),
+        }
+        self.predictions_made += 1
+
+        return predicted_pn.tolist(), float(crisis_probability)
+
+    def update_prediction_error(self):
+        """
+        Compare last prediction to actual PN and track error.
+
+        Call this after each new PN observation to calibrate predictor.
+        """
+        if self.last_prediction is None or len(self.pn_history) < 2:
+            return
+
+        # Get actual PN that occurred after prediction
+        actual_pn = self.pn_history[-1]["value"]
+
+        # Get predicted value for this step (first predicted value)
+        if self.last_prediction["predicted_pn"]:
+            predicted_pn = self.last_prediction["predicted_pn"][0]
+            error = abs(predicted_pn - actual_pn)
+
+            self.prediction_errors.append(error)
+
+            # Clear last prediction to avoid double-counting
+            self.last_prediction = None
+
+    def get_prediction_accuracy(self) -> Dict:
+        """
+        Get statistics on prediction accuracy.
+
+        Returns:
+            Dictionary with MAE, RMSE, and calibration metrics
+        """
+        if len(self.prediction_errors) < 3:
+            return {"status": "insufficient_data", "predictions_made": self.predictions_made}
+
+        errors = np.array(self.prediction_errors)
+
+        return {
+            "mae": float(np.mean(errors)),
+            "rmse": float(np.sqrt(np.mean(errors**2))),
+            "max_error": float(np.max(errors)),
+            "predictions_made": self.predictions_made,
+            "calibration": "good" if np.mean(errors) < 0.15 else "needs_adjustment",
+        }
+
+    def should_preempt_uncertainty(self, threshold: float = 0.7) -> Tuple[bool, str]:
+        """
+        Determine if system should preemptively report uncertainty.
+
+        Args:
+            threshold: Crisis probability threshold for preemption
+
+        Returns:
+            (should_preempt, reason)
+        """
+        if len(self.pn_history) < 10:
+            return False, "insufficient_history"
+
+        # Predict next few steps
+        predicted_pn, crisis_prob = self.predict_pn_trajectory(steps_ahead=3)
+
+        if crisis_prob >= threshold:
+            return (
+                True,
+                f"Predicted crisis probability {crisis_prob:.1%} (threshold {threshold:.1%})",
+            )
+
+        # Check if trajectory is increasing rapidly
+        if len(predicted_pn) >= 2:
+            trend = predicted_pn[-1] - predicted_pn[0]
+            if trend > 0.2:  # PN increasing by >0.2 in next 3 steps
+                return True, f"Rapidly increasing PN trajectory (Δ={trend:.2f})"
+
+        return False, "normal_trajectory"
