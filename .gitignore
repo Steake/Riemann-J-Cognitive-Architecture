@@ -40,6 +40,23 @@ session_log_v4.jsonl
 *.pth
 decoder_projection_head.pth
 
+# Old root-level files (moved to src/)
+/config.py
+/shared_resources.py
+/pn_driver.py
+/architecture.py
+/tui.py
+/tui.css
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# pytest cache
+.pytest_cache/
+
 # OS
 .DS_Store
 Thumbs.db
