@@ -82,7 +82,7 @@ You can customize your Codespace by:
 
 - **GPU Support**: Codespaces don't have GPU acceleration by default. The application will fall back to CPU inference.
 - **Model Download**: First run will download the Phi-3.5-mini-instruct model (~3.8GB), which may take a few minutes.
-- **Memory**: Default Codespace machines have 4GB RAM. For better performance, consider upgrading to a larger machine type.
+- **Memory**: The application requires ~8GB RAM for optimal performance. Default 2-core Codespace machines have 8GB RAM, which should be sufficient. If you experience memory issues, consider upgrading to a larger machine type.
 
 ## Troubleshooting
 
