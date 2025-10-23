@@ -9,6 +9,8 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](tests/)
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Steake/Riemann-J-Cognitive-Architecture)
+
 *Operationalizing the axiom: **`A ≠ s`** — the agent's internal state is ontologically distinct from its symbolic data*
 
 [Features](#-key-features) •
@@ -72,10 +74,12 @@ Built with **Textual TUI** for professional terminal interface:
 - Multi-threaded, non-blocking UI
 - Rich conversation formatting
 
+<!-- TODO: Add TUI screenshot
 <div align="center">
   <img src="docs/assets/tui_screenshot.png" alt="Riemann-J TUI" width="800" />
   <p><i>Real-time visualization of prediction error and system state</i></p>
 </div>
+-->
 
 ## 🚀 Installation
 
@@ -350,7 +354,7 @@ pytest tests/bdd/features/pn_driver.feature
 - ✅ Multi-user isolation
 - ✅ Lyapunov stability analysis
 
-See [SCRIPTS_GUIDE.md](SCRIPTS_GUIDE.md) for detailed script usage and [tests/README.md](tests/README.md) for testing documentation.
+See [SCRIPTS_GUIDE.md](docs/SCRIPTS_GUIDE.md) for detailed script usage and [tests/README.md](tests/README.md) for testing documentation.
 
 ## 🎨 Code Quality
 
