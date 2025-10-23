@@ -16,7 +16,9 @@ from sklearn.mixture import GaussianMixture
 from transformers import LogitsProcessor
 
 from .config import *
+from .metacognition import MetaCognitiveMonitor
 from .shared_resources import device, model, tokenizer
+from .uncertainty import UncertaintyInterface
 
 
 @dataclass
@@ -102,6 +104,8 @@ class CognitiveWorkspace:
         self.symbolic_interface = SymbolicInterface()
         self.user_attractors = {}
         self.log_file = open(LOG_FILE, "a")
+        self.meta_monitor = MetaCognitiveMonitor()  # Phase 1: Meta-cognitive awareness
+        self.uncertainty_interface = UncertaintyInterface()  # Phase 3: Uncertainty awareness
 
     def get_or_create_user(self, user_id: str) -> UserAttractor:
         if user_id not in self.user_attractors:
@@ -211,6 +215,17 @@ class CognitiveWorkspace:
             },
         )
 
+    def _resolve_crisis(self, pn_signal):
+        """
+        Wrapper for J-Operator that hooks meta-cognitive monitoring.
+        """
+        result = self._j_operator_resolve(pn_signal)
+
+        # META-COGNITIVE AWARENESS: System observes its own crisis resolution
+        self.meta_monitor.observe_j_operator_activation(result)
+
+        return result
+
     def process_user_input(self, user_id: str, text: str) -> tuple[str, SyntheticState]:
         user_attractor = self.get_or_create_user(user_id)
         initial_state_vec = self.symbolic_interface.encoder(text)
@@ -225,6 +240,12 @@ class CognitiveWorkspace:
             is_j_shift_product=False,
         )
         response_text = self.symbolic_interface.decoder(attracted_state_vec)
+
+        # Phase 3: Augment response with uncertainty awareness if needed
+        current_pn = self.meta_monitor.get_current_pn()
+        if self.uncertainty_interface.should_communicate_uncertainty(current_pn):
+            response_text = self.uncertainty_interface.augment_response(response_text, current_pn)
+
         return response_text, state_obj
 
     def log_state(self, state: SyntheticState):
@@ -234,6 +255,41 @@ class CognitiveWorkspace:
             "std": float(state.latent_representation.std()),
         }
         self.log_file.write(json.dumps(log_entry) + "\n")
+
+    def get_self_report(self, verbose: bool = False) -> str:
+        """
+        Generate natural language self-report of internal state.
+
+        This is the system's introspective voice - its ability to
+        articulate what it's experiencing internally.
+        """
+        return self.meta_monitor.generate_self_report(verbose=verbose)
+
+    def should_report_uncertainty(self) -> bool:
+        """
+        Check if system should proactively communicate its uncertainty.
+        """
+        return self.meta_monitor.should_report_uncertainty()
+
+    def get_uncertainty_report(self) -> str:
+        """
+        Generate detailed uncertainty report showing classification,
+        confidence, and diagnostic information.
+        """
+        current_pn = self.meta_monitor.get_current_pn()
+        report = self.uncertainty_interface.generate_uncertainty_report(current_pn)
+
+        lines = [
+            f"Uncertainty Level: {report.uncertainty_level.upper()}",
+            f"Confidence Modifier: {report.confidence_modifier:.2f}",
+            f"Current PN: {report.pn_value:.4f}",
+            f"Should Communicate: {report.should_communicate}",
+            "",
+            "Explanation:",
+            report.explanation,
+        ]
+
+        return "\n".join(lines)
 
     def close(self):
         self.log_file.close()
