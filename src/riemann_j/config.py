@@ -9,10 +9,13 @@ without altering the core codebase, a key best practice for maintainability.
 PN_THRESHOLD: float = 0.9  # p_n value that triggers a J-Shift
 
 # --- J-Operator Stability Parameters ---
-J_OPERATOR_MAX_ITERATIONS: int = 50
-J_OPERATOR_STABILITY_EPSILON: float = 1e-6
+J_OPERATOR_MAX_ITERATIONS: int = 100
+J_OPERATOR_STABILITY_EPSILON: float = 1e-6  # Absolute threshold (backup)
+J_OPERATOR_RELATIVE_EPSILON: float = 0.01  # Relative threshold: 1% of state magnitude
 J_OPERATOR_INITIAL_LR: float = 0.3
 J_OPERATOR_ADAPTIVE_LR_RATE: float = 5.0
+J_OPERATOR_LYAPUNOV_WINDOW: int = 10  # Check stability over last N iterations
+J_OPERATOR_LYAPUNOV_THRESHOLD: float = -1.0  # Negative = converging
 
 # --- User Attractor Parameters ---
 ATTRACTOR_GMM_COMPONENTS: int = 5
