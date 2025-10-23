@@ -1,0 +1,48 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.4.2, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/work/Riemann-J-Cognitive-Architecture/Riemann-J-Cognitive-Architecture
+configfile: pyproject.toml
+plugins: cov-7.0.0, bdd-8.1.0
+collecting ... collected 23 items
+
+tests/bdd/step_defs/test_pn_driver_steps.py::test_pn_driver_starts_with_low_prediction_error <- ../../../.local/lib/python3.12/site-packages/pytest_bdd/scenario.py PASSED [  4%]
+tests/bdd/step_defs/test_pn_driver_steps.py::test_pn_increases_with_computation_steps <- ../../../.local/lib/python3.12/site-packages/pytest_bdd/scenario.py PASSED [  8%]
+tests/bdd/step_defs/test_pn_driver_steps.py::test_pn_resets_when_zero_is_found <- ../../../.local/lib/python3.12/site-packages/pytest_bdd/scenario.py PASSED [ 13%]
+tests/bdd/step_defs/test_pn_driver_steps.py::test_pn_signals_are_added_to_workspace <- ../../../.local/lib/python3.12/site-packages/pytest_bdd/scenario.py PASSED [ 17%]
+tests/unit/test_architecture.py::TestSyntheticState::test_state_creation PASSED [ 21%]
+tests/unit/test_architecture.py::TestSyntheticState::test_state_with_j_shift PASSED [ 26%]
+tests/unit/test_architecture.py::TestDecoderProjectionHead::test_projection_head_creation PASSED [ 30%]
+tests/unit/test_architecture.py::TestDecoderProjectionHead::test_projection_head_forward PASSED [ 34%]
+tests/unit/test_architecture.py::TestUserAttractor::test_attractor_initialization PASSED [ 39%]
+tests/unit/test_architecture.py::TestUserAttractor::test_add_state PASSED [ 43%]
+tests/unit/test_architecture.py::TestUserAttractor::test_apply_affinity_untrained PASSED [ 47%]
+tests/unit/test_architecture.py::TestUserAttractor::test_apply_affinity_with_history PASSED [ 52%]
+tests/unit/test_config.py::TestConfiguration::test_pn_threshold_exists PASSED [ 56%]
+tests/unit/test_config.py::TestConfiguration::test_j_operator_params_exist PASSED [ 60%]
+tests/unit/test_config.py::TestConfiguration::test_attractor_params_exist PASSED [ 65%]
+tests/unit/test_config.py::TestConfiguration::test_riemann_params_exist PASSED [ 69%]
+tests/unit/test_config.py::TestConfiguration::test_model_params_exist PASSED [ 73%]
+tests/unit/test_pn_driver.py::TestPredictionErrorSignal::test_signal_creation PASSED [ 78%]
+tests/unit/test_pn_driver.py::TestPredictionErrorSignal::test_signal_pn_range PASSED [ 82%]
+tests/unit/test_pn_driver.py::TestPNDriverRiemannZeta::test_driver_initialization PASSED [ 86%]
+tests/unit/test_pn_driver.py::TestPNDriverRiemannZeta::test_calculate_pn_zero_steps PASSED [ 91%]
+tests/unit/test_pn_driver.py::TestPNDriverRiemannZeta::test_calculate_pn_max_steps PASSED [ 95%]
+tests/unit/test_pn_driver.py::TestPNDriverRiemannZeta::test_calculate_pn_sigmoid_behavior PASSED [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.3-final-0 ________________
+
+Name                                Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------
+src/riemann_j/__init__.py               6      0   100%
+src/riemann_j/__main__.py               4      4     0%   4-8
+src/riemann_j/architecture.py         108     50    54%   41-42, 46-49, 52-67, 93-95, 98-100, 104-107, 110-129, 132-139, 142-144, 147
+src/riemann_j/config.py                13      0   100%
+src/riemann_j/pn_driver.py             35     11    69%   39-61
+src/riemann_j/shared_resources.py      14      0   100%
+src/riemann_j/tui.py                   96     96     0%   9-141
+-----------------------------------------------------------------
+TOTAL                                 276    161    42%
+Coverage HTML written to dir htmlcov
+============================= 23 passed in 10.18s ==============================
