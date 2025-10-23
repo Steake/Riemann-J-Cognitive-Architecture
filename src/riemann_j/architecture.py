@@ -65,12 +65,17 @@ class SymbolicInterface:
             def __call__(self, input_ids, scores):
                 return scores + logit_bias
 
+        # Use bos_token_id if available, else eos_token_id as fallback
+        start_token_id = (
+            tokenizer.bos_token_id if tokenizer.bos_token_id is not None else tokenizer.eos_token_id
+        )
+
         with torch.no_grad():
             output_ids = model.generate(
                 max_length=50,
                 pad_token_id=tokenizer.eos_token_id,
                 logits_processor=[StateBiasLogitsProcessor()],
-                input_ids=torch.tensor([[tokenizer.bos_token_id]], device=device),
+                input_ids=torch.tensor([[start_token_id]], device=device),
             )
 
         return tokenizer.decode(output_ids[0], skip_special_tokens=True)

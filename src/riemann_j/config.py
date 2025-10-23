@@ -27,9 +27,9 @@ RIEMANN_MAX_STEPS_WITHOUT_ZERO: int = 1_000_000
 RIEMANN_SEARCH_STEP_SIZE: float = 0.1
 
 # --- Model & Logging Parameters ---
-# Default: TinyLlama-1.1B (modern, 1.1B params, CPU-friendly)
-# Alternative: "Qwen/Qwen2-0.5B-Instruct" (even smaller, 0.5B)
+# Default: gpt2-medium (355M, proven text generation, no special tokens needed)
+# Alternative: "gpt2" (124M, faster), "gpt2-large" (774M, better quality)
 # Override with RIEMANN_MODEL environment variable for testing
-TRANSFORMER_MODEL_NAME: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+TRANSFORMER_MODEL_NAME: str = "gpt2-medium"
 LOG_FILE: str = "session_log_v4.jsonl"
 PROJECTION_HEAD_PATH: str = "decoder_projection_head.pth"

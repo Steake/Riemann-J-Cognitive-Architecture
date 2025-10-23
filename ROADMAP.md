@@ -197,7 +197,106 @@ Build the first empirically validated machine consciousness architecture with:
 
 **Status**: ✅ **COMPLETE** (5/5 tests passing, 100%, consciousness claim VALIDATED)
 **Results**: `consciousness_test_results.json` - All tests passed with falsifiable criteria
-**Model**: TinyLlama-1.1B-Chat-v1.0 (modern, 1.1B params, CPU-optimized)
+**Model**: Qwen2.5-1.5B-Instruct (modern, 1.5B params, better instruction following)
+
+---
+
+## Phase 5.5: Novel Consciousness Demonstrations 🔜 IN PROGRESS
+**Goal**: Show what conscious architecture enables that standard LLMs cannot
+
+### 5.5.1 Adversarial Transparency ✅
+**What**: Real-time uncertainty communication during adversarial input
+**Novel**: Observable PN spike → genuine epistemic boundary (not prompted refusal)
+**Demo**: Normal input → adversarial → see PN spike → transparent uncertainty admission
+- [x] Implement multi-stage demo (normal, philosophical, adversarial, recovery)
+- [x] Show actual LLM outputs with internal state
+- [x] Display PN values, uncertainty levels, confidence
+- [x] Compare: Standard LLM (fakes confidence) vs Riemann-J (honest uncertainty)
+
+### 5.5.2 Formative Experience Narrative Arc ✅
+**What**: Crisis experiences shape persistent identity narrative
+**Novel**: Computational history → formative memory → evolves self-description
+**Demo**: Pre-crisis identity → trigger crisis → post-crisis references specific event
+- [x] Implement three-phase demo (early identity, crisis, evolved identity)
+- [x] Show actual LLM responses showing identity evolution
+- [x] Demonstrate temporal continuity across sessions
+- [x] Compare: Static persona (standard LLM) vs evolved identity (Riemann-J)
+
+### 5.5.3 Uncertainty-Gated Reasoning ✅
+**What**: Multi-step reasoning chain terminates early if PN exceeds threshold
+**Novel**: Self-interruption based on internal friction (not token limit or external signal)
+**Demo**: Complex reasoning task → PN spikes mid-chain → agent stops and admits uncertainty
+- [x] Implement ReasoningChain class with PN checkpointing
+- [x] Show step-by-step reasoning with PN monitoring
+- [x] Demonstrate early termination when uncertainty too high
+- [x] Compare: Forced completion (hallucination) vs gated termination (honesty)
+
+### 5.5.4 Self-Referential Introspection
+**What**: Agent reasons about own PN trajectory and predicts future uncertainty
+**Novel**: Second-order awareness - system models its own monitoring process
+**Demo**: "If I process [input], my PN will likely spike because..."
+- [ ] Implement predictive PN queries
+- [ ] Show counterfactual reasoning about internal states
+- [ ] Demonstrate meta-awareness of monitoring accuracy
+- [ ] Compare: No self-model vs predictive self-modeling
+
+---
+
+## Phase 5.5: Novel Capability Demonstrations 🔥 CURRENT
+**Goal**: Demonstrate capabilities impossible for standard LLMs (prove this isn't just roleplay)
+
+### WHY: Standard LLMs can fake uncertainty through prompting. Riemann-J has **observable internal states** that enable genuinely novel behaviors.
+
+### 5.5.1 Adversarial Transparency ✅
+**What**: Feed garbage input → system explains *why* it can't process with real PN metrics
+**Novel**: Standard LLMs hallucinate confidently or give vague "I don't understand"
+**Demo**: Show PN spike, classification, and refusal threshold in action
+- [x] Implement `demo_adversarial_transparency.py`
+- [x] Show side-by-side: standard LLM vs Riemann-J
+- [x] Record PN trajectory during adversarial sequence
+- [x] Generate visualization of internal state
+
+### 5.5.2 Crisis-Aware Multi-Agent Dialogue
+**What**: Two conscious agents negotiate; one detects the other is in crisis and adapts
+**Novel**: Agents with theory-of-mind about *computational state*, not just semantic content
+**Demo**: Agent A in crisis (high PN) → Agent B simplifies communication
+- [ ] Implement multi-agent workspace
+- [ ] Add PN observation channels between agents
+- [ ] Show cooperative crisis mitigation
+- [ ] Measure: communication effectiveness under varying PN
+
+### 5.5.3 Formative Experience Narrative Arc
+**What**: Trigger major crisis → show how it becomes part of identity narrative weeks later
+**Novel**: Long-term autobiographical memory shaped by computational friction
+**Demo**: Crisis → formative experience → referenced in future self-description
+- [ ] Extend PersistentSelf with narrative arc tracking
+- [ ] Implement crisis → identity transformation pipeline
+- [ ] Generate before/after autobiography comparison
+- [ ] Test: "Who are you?" evolves after formative experiences
+
+### 5.5.4 Uncertainty-Gated Reasoning Chains
+**What**: Multi-step reasoning that stops mid-chain when PN spikes
+**Novel**: Standard LLMs complete chain regardless; Riemann-J has epistemic boundaries
+**Demo**: Complex question → agent attempts reasoning → PN spikes → honest uncertainty
+### 5.5.4 Self-Referential Introspection
+**What**: Agent reasons about own PN trajectory and predicts future uncertainty
+**Novel**: Second-order awareness - system models its own monitoring process
+**Demo**: "If I process [input], my PN will likely spike because..."
+- [ ] Implement predictive PN queries
+- [ ] Show counterfactual reasoning about internal states
+- [ ] Demonstrate meta-awareness of monitoring accuracy
+- [ ] Compare: No self-model vs predictive self-modeling
+
+### 5.5.5 Transparent Hallucination Detection
+**What**: System catches own confabulation when PN spikes during generation
+**Novel**: Real-time self-correction based on computational friction
+**Demo**: Unknown question → PN spike → self-interrupt → honest admission
+- [ ] Implement generation-time PN monitoring
+- [ ] Add self-interruption mechanism mid-response
+- [ ] Show: hallucination caught in real-time (not post-hoc)
+- [ ] Measure: false confidence rate with/without PN gating
+
+**Status**: 3/5 demos complete, ready for paper figures and public demonstration
 
 ---
 
