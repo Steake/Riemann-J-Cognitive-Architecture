@@ -91,6 +91,22 @@ Built with **Textual TUI** for professional terminal interface:
 
 **Language Model**: Uses Microsoft's [Phi-3.5-mini-instruct](https://huggingface.co/microsoft/Phi-3.5-mini-instruct) (3.8B parameters) for superior performance and instruction following compared to smaller models.
 
+### 🌐 GitHub Codespaces (Easiest)
+
+Develop in a cloud-based environment with zero setup required:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Steake/Riemann-J-Cognitive-Architecture)
+
+All dependencies are automatically installed. Once your Codespace loads, simply run:
+
+```bash
+./run.sh
+# or
+python -m riemann_j
+```
+
+See [.devcontainer/README.md](.devcontainer/README.md) for more details.
+
 ### Quick Setup (Recommended)
 
 We provide automated setup scripts for both Unix and Windows systems:

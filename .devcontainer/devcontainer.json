@@ -12,7 +12,8 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.black-formatter",
-        "ms-toolsai.jupyter"
+        "ms-toolsai.jupyter",
+        "ms-python.isort"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
@@ -20,15 +21,24 @@
         "python.linting.pylintEnabled": false,
         "python.linting.flake8Enabled": true,
         "python.formatting.provider": "black",
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": ["tests"],
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
           "source.organizeImports": "explicit"
+        },
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.formatOnSave": true
         }
       }
     }
   },
 
-  "postCreateCommand": "pip install -e '.[dev]'",
+  "postCreateCommand": "pip install --upgrade pip && pip install -e '.[dev]'",
+
+  "postStartCommand": "echo 'Welcome to Riemann-J Cognitive Architecture! Run ./run.sh or python -m riemann_j to start.'",
 
   "forwardPorts": [],
 
