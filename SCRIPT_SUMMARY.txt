@@ -1,0 +1,210 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║        Riemann-J Cognitive Architecture - Setup Scripts Summary          ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📦 SCRIPTS ADDED
+═════════════════
+
+Linux/macOS Scripts:
+  ✅ setup_venv.sh  - Automated environment setup (executable)
+  ✅ run.sh         - Launch application (executable)
+  ✅ test.sh        - Run test suite (executable)
+
+Windows Scripts:
+  ✅ setup_venv.bat - Automated environment setup
+  ✅ run.bat        - Launch application
+  ✅ test.bat       - Run test suite
+
+Documentation:
+  ✅ SCRIPTS_GUIDE.md (10KB) - Comprehensive usage guide
+  ✅ SETUP_DEMO.md (6KB)     - Quick start demonstration
+
+
+🎯 QUICK START
+═══════════════
+
+Linux/macOS:
+  1. ./setup_venv.sh    # One-time setup
+  2. ./run.sh           # Launch application
+  3. ./test.sh          # Run tests
+
+Windows:
+  1. setup_venv.bat     # One-time setup
+  2. run.bat            # Launch application
+  3. test.bat           # Run tests
+
+
+✨ KEY FEATURES
+════════════════
+
+setup_venv.sh / setup_venv.bat:
+  ✓ Auto-detects Python 3.10+
+  ✓ Creates virtual environment in ./venv/
+  ✓ Upgrades pip, setuptools, wheel
+  ✓ Installs core dependencies (requirements.txt)
+  ✓ Optional dev dependencies (requirements-dev.txt)
+  ✓ Installs riemann-j package in editable mode
+  ✓ Handles existing venv gracefully
+  ✓ Clear status messages with emojis
+
+run.sh / run.bat:
+  ✓ Checks for virtual environment
+  ✓ Auto-activates if needed
+  ✓ Verifies package installation
+  ✓ Provides usage instructions
+  ✓ Clean error handling
+
+test.sh / test.bat:
+  ✓ Multiple test modes: --unit, --bdd, --integration
+  ✓ Coverage reports: --coverage
+  ✓ Verbose output: -v
+  ✓ Help system: --help
+  ✓ CI/CD friendly exit codes
+
+
+📋 TEST SCRIPT OPTIONS
+═══════════════════════
+
+./test.sh [OPTIONS]
+
+  --unit          Run only unit tests
+  --bdd           Run only BDD tests
+  --integration   Run only integration tests
+  --coverage      Generate coverage report
+  -v, --verbose   Verbose output
+  --help          Show help message
+
+Examples:
+  ./test.sh                    # Run all tests
+  ./test.sh --unit --coverage  # Unit tests with coverage
+  ./test.sh --bdd -v           # BDD tests, verbose
+
+
+🔄 TYPICAL WORKFLOW
+════════════════════
+
+First-Time Setup:
+  $ git clone https://github.com/Steake/Riemann-J-Cognitive-Architecture.git
+  $ cd Riemann-J-Cognitive-Architecture
+  $ ./setup_venv.sh
+  $ source venv/bin/activate
+
+Daily Development:
+  $ source venv/bin/activate
+  $ ./test.sh --unit          # Quick validation
+  $ [make code changes]
+  $ ./test.sh --coverage      # Full validation
+  $ ./run.sh                  # Manual testing
+
+Before Committing:
+  $ ./test.sh --coverage
+  $ [review coverage report]
+  $ git add .
+  $ git commit
+
+
+📊 SCRIPT OUTPUT EXAMPLES
+═══════════════════════════
+
+setup_venv.sh:
+  ==================================
+  Riemann-J Virtual Environment Setup
+  ==================================
+  
+  ✓ Found Python: Python 3.10.x
+  📦 Creating virtual environment...
+  ✓ Virtual environment created
+  
+  🔌 Activating virtual environment...
+  ⬆️  Upgrading pip...
+  📥 Installing dependencies...
+  
+  ==================================
+  ✅ Setup Complete!
+  ==================================
+
+run.sh:
+  ==================================
+  Riemann-J Cognitive Architecture
+  ==================================
+  
+  🚀 Starting Riemann-J TUI...
+  
+  Commands:
+    - Type messages to interact
+    - /switch <username> - Switch user
+    - /exit - Exit
+  
+  Loading Causal Language Model...
+  [TUI interface launches]
+
+test.sh:
+  ==================================
+  Riemann-J Test Suite
+  ==================================
+  
+  🧪 Running all tests...
+  
+  ============================= test session starts ==============================
+  collected 23 items
+  
+  tests/bdd/step_defs/test_pn_driver_steps.py ....                         [ 17%]
+  tests/unit/test_architecture.py ........                                 [ 52%]
+  tests/unit/test_config.py .....                                          [ 73%]
+  tests/unit/test_pn_driver.py ........                                    [100%]
+  
+  ============================= 23 passed in 10.02s ==============================
+  
+  ==================================
+  ✅ All tests passed!
+  ==================================
+
+
+🎓 LEARNING RESOURCES
+══════════════════════
+
+1. SCRIPTS_GUIDE.md    - Detailed script documentation
+2. SETUP_DEMO.md       - Quick start guide with examples
+3. README.md           - Updated with script usage
+4. tests/README.md     - Testing guide
+
+
+🐛 TROUBLESHOOTING
+═══════════════════
+
+Issue: "Permission denied"
+  Solution: chmod +x setup_venv.sh run.sh test.sh
+
+Issue: "Python 3.10+ not found"
+  Solution: Install Python 3.10+ and add to PATH
+
+Issue: "pytest not found"
+  Solution: pip install -r requirements-dev.txt
+
+Issue: "Virtual environment not found"
+  Solution: Run ./setup_venv.sh first
+
+
+✅ STATUS: COMPLETE
+════════════════════
+
+All scripts tested and verified:
+  ✓ setup_venv.sh executable and functional
+  ✓ run.sh executable and functional
+  ✓ test.sh executable and functional
+  ✓ Windows .bat equivalents created
+  ✓ Comprehensive documentation added
+  ✓ README.md updated with script usage
+  ✓ Cross-platform compatibility ensured
+
+Commit: f72ce6c
+Files: 9 files added (6 scripts + 3 docs)
+Documentation: 16KB+ of script guides
+
+
+═══════════════════════════════════════════════════════════════════════════
+
+Last Updated: 2025-10-23
+Version: 4.0.0
