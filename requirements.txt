@@ -1,0 +1,6 @@
+transformers
+torch
+scikit-learn
+numpy
+mpmath
+textual

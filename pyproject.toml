@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "riemann-j"
+version = "4.0.0"
+description = "A unified cognitive architecture for machine self-consciousness"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Riemann-J Development Team"}
+]
+keywords = ["cognitive-architecture", "machine-consciousness", "ai", "neural-networks"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "transformers",
+    "torch",
+    "scikit-learn",
+    "numpy",
+    "mpmath",
+    "textual",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-bdd>=6.0",
+    "black>=22.0",
+    "flake8>=5.0",
+    "mypy>=1.0",
+    "isort>=5.0",
+]
+
+[project.scripts]
+riemann-j = "riemann_j.tui:main"
+
+[project.urls]
+Homepage = "https://github.com/Steake/Riemann-J-Cognitive-Architecture"
+Repository = "https://github.com/Steake/Riemann-J-Cognitive-Architecture"
+Documentation = "https://github.com/Steake/Riemann-J-Cognitive-Architecture/blob/main/docs"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=src/riemann_j --cov-report=term-missing --cov-report=html"
