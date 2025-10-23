@@ -24,6 +24,6 @@ RIEMANN_MAX_STEPS_WITHOUT_ZERO: int = 1_000_000
 RIEMANN_SEARCH_STEP_SIZE: float = 0.1
 
 # --- Model & Logging Parameters ---
-TRANSFORMER_MODEL_NAME: str = "gpt2"
+TRANSFORMER_MODEL_NAME: str = "microsoft/Phi-3.5-mini-instruct"
 LOG_FILE: str = "session_log_v4.jsonl"
 PROJECTION_HEAD_PATH: str = "decoder_projection_head.pth"

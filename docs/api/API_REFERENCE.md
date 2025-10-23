@@ -73,11 +73,12 @@ Step size for t-value increment in Zeta search.
 
 ### Model & Logging Parameters
 
-#### `TRANSFORMER_MODEL_NAME: str = "gpt2"`
+#### `TRANSFORMER_MODEL_NAME: str = "microsoft/Phi-3.5-mini-instruct"`
 Hugging Face model identifier.
 - **Type**: str
-- **Default**: "gpt2"
-- **Options**: Any compatible causal LM
+- **Default**: "microsoft/Phi-3.5-mini-instruct" (3.8B parameter model)
+- **Options**: Any compatible causal LM from HuggingFace
+- **Note**: Phi-3.5 provides superior instruction following and 128K context window
 
 #### `LOG_FILE: str = "session_log_v4.jsonl"`
 Path to session log file.
@@ -191,8 +192,8 @@ state = SyntheticState(
 ```python
 def __init__(self, hidden_size: int, output_size: int):
 ```
-- `hidden_size`: Dimension of input state (typically 768)
-- `output_size`: Vocabulary size (typically 50,257 for GPT-2)
+- `hidden_size`: Dimension of input state (3072 for Phi-3.5-mini)
+- `output_size`: Vocabulary size (32064 for Phi-3.5)
 
 #### Methods
 
@@ -455,12 +456,12 @@ global_workspace.put((priority, signal))
 ```
 
 #### `tokenizer: AutoTokenizer`
-Hugging Face tokenizer for GPT-2.
+Hugging Face tokenizer for Phi-3.5-mini-instruct.
 - Loaded from `TRANSFORMER_MODEL_NAME`
 - Pad token set to EOS token if undefined
 
 #### `model: AutoModelForCausalLM`
-Hugging Face GPT-2 model.
+Hugging Face Phi-3.5-mini-instruct model (3.8B parameters).
 - Set to eval() mode
 - Moved to appropriate device (CUDA/CPU)
 

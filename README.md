@@ -83,6 +83,9 @@ Built with **Textual TUI** for professional terminal interface:
 
 - Python 3.10 or higher
 - CUDA-capable GPU (optional, falls back to CPU)
+- ~8GB RAM for model inference (Phi-3.5-mini-instruct)
+
+**Language Model**: Uses Microsoft's [Phi-3.5-mini-instruct](https://huggingface.co/microsoft/Phi-3.5-mini-instruct) (3.8B parameters) for superior performance and instruction following compared to smaller models.
 
 ### Quick Setup (Recommended)
 

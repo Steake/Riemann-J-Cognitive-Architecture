@@ -151,12 +151,12 @@ class SyntheticState:
 ## Performance Characteristics
 
 ### Memory
-- Model: ~500MB (GPT-2)
+- Model: ~7.5GB (Phi-3.5-mini-instruct, 3.8B parameters)
 - Per-user overhead: ~1-10MB depending on history length
-- State vectors: 768 float32 = 3KB each
+- State vectors: 3072 float32 = 12KB each
 
 ### Latency
-- Encoding: ~50-100ms
+- Encoding: ~100-200ms (depending on hardware)
 - Affinity application: <1ms
 - Generation: ~200-500ms (50 tokens)
 - J-Shift convergence: ~100-500ms (depends on iterations)
