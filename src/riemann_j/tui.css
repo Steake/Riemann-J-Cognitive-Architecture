@@ -86,6 +86,9 @@
     border: round white;
     padding: 0 1;
     height: 1fr;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* User Input */

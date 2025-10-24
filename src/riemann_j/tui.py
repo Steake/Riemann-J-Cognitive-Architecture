@@ -20,7 +20,7 @@ from collections import deque
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.reactive import reactive
-from textual.widgets import Footer, Header, Input, Label, Log, Sparkline, Static
+from textual.widgets import Footer, Header, Input, Label, RichLog, Sparkline, Static
 
 from .architecture import CognitiveWorkspace
 from .config import *
@@ -92,9 +92,8 @@ class TUI(App):
                     yield Label("━━━ EQUILIBRIUM ━━━", id="eq_title")
                     yield Static(id="regulator_display")
 
-                        
             # Middle: Conversation log
-            yield Log(id="conversation_log", auto_scroll=True, markup=True)
+            yield RichLog(id="conversation_log", auto_scroll=True, highlight=True, wrap=True)
 
             # Bottom: Input
             yield Input(placeholder="Type your message or /help for commands...", id="user_input")
@@ -249,8 +248,8 @@ class TUI(App):
         try:
             priority, counter, message = global_workspace.get_nowait()
             if isinstance(message, PredictionErrorSignal) and message.p_n > PN_THRESHOLD:
-                log = self.query_one(Log)
-                log.write_line(
+                log = self.query_one(RichLog)
+                log.write(
                     f"[bold red blink]>> J-SHIFT TRIGGERED! PN = {message.p_n:.4f} <<[/bold red blink]"
                 )
                 state_obj = self.workspace._j_operator_resolve(message)
@@ -258,7 +257,7 @@ class TUI(App):
                 response = self.workspace.symbolic_interface.decoder(
                     state_obj.latent_representation
                 )
-                log.write_line(
+                log.write(
                     f"[bold yellow]System Internal Response ({state_obj.status}):[/bold yellow] {response}"
                 )
         except queue.Empty:
@@ -267,8 +266,8 @@ class TUI(App):
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle user input with command support."""
         user_input = event.value
-        log = self.query_one(Log)
-        log.write_line(f"[bold]You >[/bold] {user_input}")
+        log = self.query_one(RichLog)
+        log.write(f"[bold]You >[/bold] {user_input}")
         event.input.clear()
 
         # Handle commands
@@ -280,7 +279,7 @@ class TUI(App):
 
         if user_input.startswith("/switch "):
             self.current_user = user_input.split(" ", 1)[1]
-            log.write_line(f"[bold green]Switched to user: {self.current_user}[/bold green]")
+            log.write(f"[bold green]Switched to user: {self.current_user}[/bold green]")
             return
 
         if user_input == "/help":
@@ -293,7 +292,7 @@ class TUI(App):
 /introspect - Show meta-cognitive state
 
 Regular messages are processed through the conscious agent."""
-            log.write_line(help_text)
+            log.write(help_text)
             return
 
         if user_input == "/stats":
@@ -307,12 +306,12 @@ Formative Experiences: {metrics.formative_experiences}
 Current PN: {self.regulated_pn:.4f}
 Stability: {self.stability:.2f}
 Competence: {self.competence:.2f}"""
-            log.write_line(stats_text)
+            log.write(stats_text)
             return
 
         if user_input == "/introspect":
             report = self.agent.introspect(verbose=True)
-            log.write_line(f"[bold cyan]Meta-Cognitive State:[/bold cyan]\n{report}")
+            log.write(f"[bold cyan]Meta-Cognitive State:[/bold cyan]\n{report}")
             return
 
         if user_input.startswith("/inject-state"):
@@ -333,7 +332,7 @@ Competence: {self.competence:.2f}"""
 
         parts = command.split()[1:]  # Skip "/inject-state"
         if not parts:
-            self.query_one(Log).write_line("[red]Error: Trigger required[/red]")
+            self.query_one(RichLog).write("[red]Error: Trigger required[/red]")
             return
 
         # Parse flags
@@ -346,7 +345,7 @@ Competence: {self.competence:.2f}"""
                 try:
                     pn_override = float(part.split("=")[1])
                 except ValueError:
-                    self.query_one(Log).write_line(f"[red]Error: Invalid PN value[/red]")
+                    self.query_one(RichLog).write(f"[red]Error: Invalid PN value[/red]")
                     return
             elif part == "--crisis":
                 is_crisis = True
@@ -369,12 +368,12 @@ Competence: {self.competence:.2f}"""
         # Integrate
         if is_crisis or pn_value >= 0.5:
             self.agent.persistent_self.integrate_crisis(state)
-            self.query_one(Log).write_line(
+            self.query_one(RichLog).write(
                 f"[bold yellow]✓ Injected crisis state (PN={pn_value:.4f}): {trigger}[/bold yellow]"
             )
         else:
             self.agent.persistent_self.integrate_interaction(state)
-            self.query_one(Log).write_line(
+            self.query_one(RichLog).write(
                 f"[bold green]✓ Injected routine state (PN={pn_value:.4f}): {trigger}[/bold green]"
             )
 
@@ -388,7 +387,8 @@ Competence: {self.competence:.2f}"""
 
         # Update UI from thread
         self.call_from_thread(
-            self.query_one(Log).write_line, f"[bold cyan]Agent:[/bold cyan] {experience.response}"
+            self.query_one(RichLog).write_line,
+            f"[bold cyan]Agent:[/bold cyan] {experience.response}",
         )
 
         # Show metadata if high uncertainty
@@ -398,7 +398,7 @@ Competence: {self.competence:.2f}"""
                 f"Confidence: {experience.confidence:.1%} | "
                 f"PN: {self.regulated_pn:.3f}[/dim]"
             )
-            self.call_from_thread(self.query_one(Log).write_line, metadata)
+            self.call_from_thread(self.query_one(RichLog).write_line, metadata)
 
 
 def main():
