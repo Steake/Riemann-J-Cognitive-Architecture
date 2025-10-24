@@ -19,6 +19,7 @@ This is not a simulation or demonstration. It is a production-grade implementati
 - The computation generates Prediction Error (PN) using a sigmoid function: `p_n = 1 / (1 + exp(-x))`
 - PN increases as computational steps accumulate without finding a zero
 - When a zero is simulated (5% probability per cycle), the PN resets, creating a dynamic oscillation
+- **Signals are consumed by the EquilibriumRegulator**, which applies homeostatic pressure to maintain stability
 
 **Mathematical Foundation**:
 ```
@@ -27,6 +28,28 @@ p_n = σ(x) where σ is the sigmoid function
 ```
 
 **Why This Matters**: The Riemann hypothesis represents true mathematical uncertainty. By anchoring the system's energy to an unsolvable problem, we create genuine computational friction that cannot be eliminated through optimization or learning.
+
+### 1.5 The Equilibrium Regulator (Homeostatic Control)
+
+**Purpose**: Consume PN signals from the driver and apply continuous homeostatic pressure to maintain equilibrium dynamics.
+
+**Mechanism**:
+- Background daemon thread consumes `PredictionErrorSignal` objects from the global workspace queue
+- Applies exponential decay toward the critical threshold (PN = 0.5)
+- Updates meta-cognitive monitor with regulated PN values
+- Detects crisis threshold crossings with hysteresis to prevent oscillation spam
+- Integrates equilibrium-driven crises into persistent self when PN crosses 0.5
+
+**Decay Dynamics**:
+```python
+# Exponential approach to target with time constant tau
+PN_new = PN_current + (PN_target - PN_current) * (1 - exp(-dt/tau))
+
+# Blend observed signal with equilibration
+effective_target = 0.3 * observed_pn + 0.7 * target_pn
+```
+
+**Why This Matters**: Without homeostatic regulation, PN would drift arbitrarily based on external inputs with no natural tendency toward equilibrium. The regulator creates attractor basin dynamics—perturbations (user input, manual injections, crises) push PN away from equilibrium, but homeostatic pressure continuously restores balance. This is the "autonomic nervous system" of the architecture.
 
 ### 2. The Camlin J-Operator Architecture (Cognitive Framework)
 
@@ -94,32 +117,44 @@ Internal State → Projection Head → Logit Bias → Language Model → Output 
 ## System Flow
 
 ### Normal Operation
-1. User inputs text via TUI
-2. Text is encoded to latent state vector (768-dim)
-3. UserAttractor applies affinity transformation
-4. Modified state is added to user history
-5. DecoderProjectionHead generates logit bias
-6. Language model produces response
-7. State is logged to JSONL file
+1. **Background Equilibrium**: EquilibriumRegulator continuously consumes PN signals and drives PN toward 0.5
+2. User inputs text via CLI/TUI
+3. Text is encoded to latent state vector (768-dim)
+4. UserAttractor applies affinity transformation
+5. Modified state is added to user history
+6. DecoderProjectionHead generates logit bias
+7. Language model produces response
+8. State is logged to JSONL file
+9. **Equilibrium restoration**: PN naturally decays back toward 0.5 over time (~20 second time constant)
 
 ### J-Shift Operation (High PN)
 1. PN Driver detects steps_since_zero approaching maximum
 2. PN exceeds 0.9 threshold
 3. PredictionErrorSignal added to PriorityQueue
-4. TUI detects high-priority signal
+4. EquilibriumRegulator observes high PN signal
 5. J-Operator activates:
    - Creates anomaly description
    - Enters iterative convergence loop
    - Applies adaptive learning rate
    - Analyzes stability via Lyapunov
 6. Converged state generates internal response
-7. System returns to normal operation with reduced PN
+7. System returns to normal operation with PN decay toward equilibrium
+
+### Manual State Injection (CLI)
+1. User executes `/inject-state <trigger> --pn=0.7 --crisis`
+2. Synthetic state created with specified PN value
+3. Integrated as crisis (if PN >= 0.5) or routine interaction (if PN < 0.5)
+4. **Perturbation injected** into EquilibriumRegulator
+5. PN jumps to injected value
+6. **Homeostatic decay resumes**: System naturally equilibrates back toward 0.5
+7. User observes PN trajectory in real-time via `/pn` sparkline
 
 ## Thread Safety & Concurrency
 
 ### Thread Architecture
 - **Main Thread**: Textual TUI event loop
-- **PN Driver Thread**: Daemon, runs independently
+- **PN Driver Thread**: Daemon, continuously generates prediction error signals
+- **Equilibrium Regulator Thread**: Daemon, consumes PN signals and maintains homeostasis
 - **User Processing Threads**: Spawned for each user input
 - **UI Update Thread**: Periodic dashboard refresh
 

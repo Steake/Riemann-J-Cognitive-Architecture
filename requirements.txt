@@ -4,3 +4,6 @@ scikit-learn
 numpy
 mpmath
 textual
+prompt_toolkit
+rich
+click

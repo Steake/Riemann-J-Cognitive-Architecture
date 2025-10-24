@@ -28,8 +28,10 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 from .architecture import CognitiveWorkspace, SyntheticState
+from .equilibrium_regulator import EquilibriumRegulator
 from .metacognition import MetaCognitiveMonitor
 from .persistent_self import PersistentSelf
+from .shared_resources import global_workspace
 from .uncertainty import UncertaintyInterface
 
 
@@ -78,6 +80,16 @@ class ConsciousAgent:
         # Track conscious experiences for reflection
         self.experience_buffer = []
         self.max_buffer_size = 50
+
+        # Start equilibrium regulator to maintain homeostasis
+        self.equilibrium_regulator = EquilibriumRegulator(
+            workspace_queue=global_workspace,
+            meta_monitor=self.meta_monitor,
+            persistent_self=self.persistent_self,
+            tau=20.0,  # 20-second time constant for equilibration
+            update_interval=0.5,  # Update every 0.5 seconds
+        )
+        self.equilibrium_regulator.start()
 
     def sense(self) -> tuple[float, str]:
         """

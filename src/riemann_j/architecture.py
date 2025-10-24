@@ -85,13 +85,17 @@ class SymbolicInterface:
 
         return tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
-    def prompt_based_generate(self, user_input: str) -> str:
+    def prompt_based_generate(self, user_input: str, state_vector: np.ndarray = None) -> str:
         """
-        Generate response using actual prompt-based LLM generation.
-        This produces coherent text instead of state-vector biased garbage.
+        Generate response using prompt-based LLM generation with optional state blending.
+
+        HYBRID APPROACH: Can blend in state-conditioned logits for experimental purposes.
+        When PROJECTION_BLEND_ALPHA > 0 and state_vector is provided, the internal
+        state influences generation through weighted logit blending.
 
         Args:
             user_input: The user's input text to respond to
+            state_vector: Optional latent state for hybrid generation (default: None)
 
         Returns:
             Generated response text
@@ -101,6 +105,19 @@ class SymbolicInterface:
 
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
 
+        # HYBRID: Optionally blend state-conditioned logits
+        logits_processor = None
+        if state_vector is not None and PROJECTION_BLEND_ALPHA > 0 and USE_PROJECTION_HEAD:
+            state_tensor = torch.tensor(state_vector, dtype=torch.float32, device=device)
+            logit_bias = self.projection_head(state_tensor) * PROJECTION_BLEND_ALPHA
+
+            class StateBlendLogitsProcessor(LogitsProcessor):
+                def __call__(self, input_ids, scores):
+                    # Blend state bias into natural logits
+                    return scores + logit_bias
+
+            logits_processor = [StateBlendLogitsProcessor()]
+
         with torch.no_grad():
             output_ids = model.generate(
                 **inputs,
@@ -109,6 +126,7 @@ class SymbolicInterface:
                 temperature=0.7,
                 top_p=0.9,
                 pad_token_id=tokenizer.eos_token_id,
+                logits_processor=logits_processor,
             )
 
         # Decode and extract only the assistant's response (after the prompt)
@@ -180,8 +198,8 @@ class CognitiveWorkspace:
             np.linalg.norm(trajectory[i + 1] - trajectory[i]) for i in range(len(trajectory) - 1)
         ]
         if not any(d > 1e-9 for d in distances):
-            return -np.inf
-        lyapunov_exp = np.mean(np.log([d for d in distances if d > 1e-9]))
+            return float("-inf")
+        lyapunov_exp = float(np.mean(np.log([d for d in distances if d > 1e-9])))
         return lyapunov_exp
 
     def _j_operator_resolve(self, pn_signal) -> SyntheticState:
@@ -192,29 +210,70 @@ class CognitiveWorkspace:
         trajectory = [a_current_tensor.cpu().numpy()]
         lyapunov_history = []
 
-        # Get first transformer layer (model-agnostic)
+        # Get first transformer layer and rotary embeddings (model-agnostic)
         if hasattr(model, "transformer"):  # GPT-2 style
             first_layer = model.transformer.h[0]
-        elif hasattr(model, "model"):  # Phi-3, LLaMA style
+            rotary_emb = None  # GPT-2 doesn't use RoPE
+        elif hasattr(model, "model"):  # Phi-3, LLaMA, Qwen3 style
             first_layer = model.model.layers[0]
+            # Get rotary embedding component for position embeddings
+            if hasattr(model.model, "rotary_emb"):
+                rotary_emb = model.model.rotary_emb
+            else:
+                rotary_emb = None
         else:
             raise AttributeError("Cannot find transformer layers in model")
 
+        # Prepare position IDs (static across iterations)
+        seq_length = 1  # Single token position
+        position_ids = torch.arange(0, seq_length, dtype=torch.long, device=device).unsqueeze(0)
+
         for i in range(J_OPERATOR_MAX_ITERATIONS):
+            # CRITICAL FIX: Recompute position embeddings for current state each iteration
+            # Position embeddings depend on the hidden state, so they must be recalculated
+            # as a_current_tensor evolves
+            if rotary_emb is not None:
+                position_embeddings = rotary_emb(
+                    a_current_tensor.unsqueeze(0).unsqueeze(0), position_ids
+                )
+            else:
+                position_embeddings = None
+
             with torch.no_grad():
-                a_target_tensor = first_layer(a_current_tensor.unsqueeze(0).unsqueeze(0))[
-                    0
-                ].squeeze(0)
+                layer_output = first_layer(
+                    a_current_tensor.unsqueeze(0).unsqueeze(0),
+                    position_ids=position_ids,
+                    position_embeddings=position_embeddings,
+                )
+                a_target_tensor = layer_output[0].squeeze(0)
 
             distance = torch.norm(a_target_tensor - a_current_tensor).item()
             current_magnitude = torch.norm(a_current_tensor).item()
 
-            # IMPROVED: Relative convergence check
+            # IMPROVED: Practical convergence criteria
+            # The J-operator seeks stability, not mathematical fixed points
+            # We check for: 1) small absolute movement, 2) small relative movement, 3) trajectory stabilization
             relative_epsilon = J_OPERATOR_RELATIVE_EPSILON * current_magnitude
             absolute_epsilon = J_OPERATOR_STABILITY_EPSILON
 
-            if distance < relative_epsilon or distance < absolute_epsilon:
+            # Practical convergence: distance as fraction of magnitude
+            distance_ratio = distance / current_magnitude if current_magnitude > 1e-6 else distance
+            practical_threshold = (
+                0.25  # Accept when movement < 25% of state norm (was 15%, too strict)
+            )
+            practical_convergence = distance_ratio < practical_threshold
+
+            if distance < relative_epsilon or distance < absolute_epsilon or practical_convergence:
                 lyapunov_exp = self._analyze_stability(trajectory)
+
+                # Determine convergence type for diagnostics
+                if distance < absolute_epsilon:
+                    conv_type = "absolute"
+                elif distance < relative_epsilon:
+                    conv_type = "relative"
+                else:
+                    conv_type = "practical"
+
                 return SyntheticState(
                     timestamp=time.time(),
                     latent_representation=a_target_tensor.cpu().numpy(),
@@ -224,11 +283,9 @@ class CognitiveWorkspace:
                     status="CONVERGED",
                     analysis={
                         "lyapunov_exp": lyapunov_exp,
-                        "iterations": i,
-                        "final_distance": distance,
-                        "convergence_type": (
-                            "relative" if distance < relative_epsilon else "absolute"
-                        ),
+                        "iterations": i + 1,
+                        "final_distance": float(distance),
+                        "convergence_type": conv_type,
                     },
                 )
 
@@ -252,13 +309,31 @@ class CognitiveWorkspace:
                             analysis={
                                 "lyapunov_exp": lyapunov_exp,
                                 "iterations": i,
-                                "final_distance": distance,
+                                "final_distance": float(distance),
                                 "convergence_type": "lyapunov_stability",
                             },
                         )
 
-            adaptive_lr = J_OPERATOR_INITIAL_LR / (1.0 + J_OPERATOR_ADAPTIVE_LR_RATE * distance)
+            # FIXED: Proper adaptive LR schedule with norm stabilization
+            # Start with high LR when far from target, decay as we approach
+            distance_normalized = distance / current_magnitude  # Normalize by state scale
+            lr_scale = 0.5 + 0.5 * np.tanh(
+                2.0 * (distance_normalized - 0.05)
+            )  # Sigmoid around 5% distance
+            adaptive_lr = J_OPERATOR_INITIAL_LR * max(0.05, lr_scale)  # Minimum 5% of initial LR
+
+            # Update state
             a_current_tensor = a_current_tensor + adaptive_lr * (a_target_tensor - a_current_tensor)
+
+            # CRITICAL: Normalize to prevent norm explosion/collapse
+            # The transformer layer can change norms unpredictably; we want directional convergence
+            current_norm = torch.norm(a_current_tensor)
+            if current_norm > 1e-6:
+                target_norm = (
+                    torch.norm(a_current_tensor).item() * 0.95 + 112.0 * 0.05
+                )  # Gently pull toward typical hidden state norm
+                a_current_tensor = a_current_tensor * (target_norm / current_norm)
+
             trajectory.append(a_current_tensor.cpu().numpy())
 
         lyapunov_exp = self._analyze_stability(trajectory)
@@ -272,7 +347,7 @@ class CognitiveWorkspace:
             analysis={
                 "lyapunov_exp": lyapunov_exp,
                 "iterations": J_OPERATOR_MAX_ITERATIONS,
-                "final_distance": distance,
+                "final_distance": float(distance),
                 "convergence_type": "none",
             },
         )
@@ -311,8 +386,10 @@ class CognitiveWorkspace:
             is_j_shift_product=False,
         )
 
-        # Use prompt-based generation for coherent output
-        response_text = self.symbolic_interface.prompt_based_generate(text)
+        # Use prompt-based generation with optional state blending (hybrid approach)
+        response_text = self.symbolic_interface.prompt_based_generate(
+            text, state_vector=attracted_state_vec
+        )
 
         # Phase 3: Augment response with uncertainty awareness if needed
         current_pn = self.meta_monitor.get_current_pn()

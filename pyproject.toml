@@ -30,6 +30,9 @@ dependencies = [
     "numpy",
     "mpmath",
     "textual",
+    "prompt_toolkit",
+    "rich",
+    "click",
 ]
 
 [project.optional-dependencies]
@@ -44,7 +47,7 @@ dev = [
 ]
 
 [project.scripts]
-riemann-j = "riemann_j.tui:main"
+riemann-j = "riemann_j.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/Steake/Riemann-J-Cognitive-Architecture"

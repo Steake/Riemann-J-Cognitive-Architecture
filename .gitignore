@@ -35,6 +35,7 @@ env/
 *.log
 *.jsonl
 session_log_v4.jsonl
+sessions/
 
 # Model checkpoints
 *.pth

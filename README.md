@@ -48,6 +48,17 @@ p_n = 1 / (1 + exp(-x))  # x based on steps since last zero
 
 **Why this matters**: Traditional AI systems optimize toward stability. Riemann-J uses mathematical uncertainty to maintain dynamic equilibrium.
 
+### ⚖️ The Equilibrium Regulator (Homeostatic Control)
+
+Background daemon that **consumes PN signals** and applies continuous homeostatic pressure:
+
+- 🎯 **Target Seeking**: Exponential decay toward PN = 0.5 (critical threshold)
+- ⏱️ **Time Constant**: ~20 seconds for equilibration after perturbations
+- 🔄 **Crisis Detection**: Triggers integration when PN crosses threshold (with hysteresis)
+- 🧬 **Autonomic System**: Maintains balance without conscious intervention
+
+**Why this matters**: Provides attractor basin dynamics—perturbations push PN away, homeostasis restores balance. This is the missing feedback loop that makes the architecture genuinely self-regulating.
+
 ### 🧠 The J-Operator (Cognitive Framework)
 
 When prediction error exceeds threshold (PN > 0.9), the **J-Operator** resolves symbolic failure through continuous state transformation:
@@ -172,7 +183,38 @@ pip install riemann-j
 
 ## 🏃 Quick Start
 
-### Using the provided scripts (Recommended)
+### Interactive CLI (Recommended)
+
+The new CLI provides a rich interactive interface with real-time introspection:
+
+```bash
+# Start the interactive CLI
+riemann-j
+
+# Or with custom identity
+riemann-j --identity my_agent
+
+# Load a previous session
+riemann-j --session sessions/my_session.json
+
+# Plain text mode (no colors)
+riemann-j --no-color
+
+# See all options
+riemann-j --help
+```
+
+**CLI Features**:
+- 🎨 Rich terminal formatting with color-coded uncertainty states
+- 📊 Real-time PN sparkline visualization
+- 💾 Session save/load functionality
+- 🧠 Meta-cognitive commands (`/introspect`, `/identity`, `/stats`)
+- 📝 Multi-line input support
+- 🔍 Explain past behavior with `/explain`
+
+See [`docs/CLI_USER_GUIDE.md`](docs/CLI_USER_GUIDE.md) for complete documentation.
+
+### Using the provided scripts
 
 ```bash
 # Linux/macOS
