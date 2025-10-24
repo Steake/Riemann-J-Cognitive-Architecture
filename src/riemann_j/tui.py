@@ -92,8 +92,9 @@ class TUI(App):
                     yield Label("━━━ EQUILIBRIUM ━━━", id="eq_title")
                     yield Static(id="regulator_display")
 
+                        
             # Middle: Conversation log
-            yield Log(id="conversation_log", auto_scroll=True)
+            yield Log(id="conversation_log", auto_scroll=True, markup=True)
 
             # Bottom: Input
             yield Input(placeholder="Type your message or /help for commands...", id="user_input")
