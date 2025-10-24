@@ -102,6 +102,7 @@ class CommandHandler:
         if hasattr(self.cli, "session") and self.cli.session:
             default_path = f"sessions/{Path(self.cli.agent.persistent_self.identity_file).stem}_autosave.json"
             try:
+                Path(default_path).parent.mkdir(parents=True, exist_ok=True)
                 self.cli.session.save(default_path)
                 self._print_info(f"Session auto-saved to {default_path}")
             except Exception as e:
