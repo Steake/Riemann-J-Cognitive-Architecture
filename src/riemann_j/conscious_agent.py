@@ -305,8 +305,8 @@ class ConsciousAgent:
         for i, exp in enumerate(impactful, 1):
             age_days = exp.age_days()
             narrative_lines.append(
-                f"{i}. {exp.impact_description} "
-                f"(occurred {age_days:.1f} days ago, PN={exp.pn_at_time:.3f})"
+                f"{i}. {exp.description} "
+                f"(occurred {age_days:.1f} days ago, PN={exp.impact_score:.3f})"
             )
 
         return "\n".join(narrative_lines)
