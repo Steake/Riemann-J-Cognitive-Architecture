@@ -6,24 +6,33 @@ providing access to meta-cognitive introspection and persistent identity feature
 
 Phase 1 Implementation: Basic REPL with ConsciousAgent integration.
 Phase 2 Implementation: Rich terminal UI with display manager.
-Phase 3 Implementation: Advanced input handling and commands.
+Phase 3 Implementation: Advanced input handling with prompt_toolkit.
 """
 
 import sys
 from typing import Optional
 
+from prompt_toolkit import PromptSession
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.history import InMemoryHistory
+
 from .architecture import CognitiveWorkspace
-from .conscious_agent import ConsciousAgent, ConsciousExperience
-from .cli_display import DisplayManager
-from .cli_input import InputHandler, InputType
 from .cli_commands import CommandHandler
 from .cli_config import SessionState
+from .cli_display import DisplayManager
+from .cli_input import InputHandler, InputType
+from .conscious_agent import ConsciousAgent, ConsciousExperience
 
 
 class RiemannCLI:
     """Interactive CLI for Riemann-J cognitive agent."""
 
-    def __init__(self, identity_path: Optional[str] = None, use_rich: bool = True, session_path: Optional[str] = None):
+    def __init__(
+        self,
+        identity_path: Optional[str] = None,
+        use_rich: bool = True,
+        session_path: Optional[str] = None,
+    ):
         """
         Initialize CLI with optional persistent identity.
 
@@ -42,7 +51,32 @@ class RiemannCLI:
         self.display = DisplayManager() if use_rich else None
         self.input_handler = InputHandler()
         self.command_handler = CommandHandler(self)
-        
+
+        # Setup prompt_toolkit session with command completion and history
+        self.history = InMemoryHistory()
+
+        # Define commands for tab completion
+        commands = [
+            "/help",
+            "/quit",
+            "/exit",
+            "/introspect",
+            "/introspect-brief",
+            "/identity",
+            "/identity-brief",
+            "/explain",
+            "/save",
+            "/load",
+            "/reset",
+            "/stats",
+            "/pn",
+            "/inject-state",
+        ]
+        self.completer = WordCompleter(commands, ignore_case=True)
+        self.prompt_session = PromptSession(
+            history=self.history, completer=self.completer, complete_while_typing=True
+        )
+
         # Session management
         self.session: Optional[SessionState] = None
         if session_path:
@@ -50,7 +84,9 @@ class RiemannCLI:
                 self.session = SessionState.load(session_path)
             except Exception as e:
                 print(f"Warning: Could not load session from {session_path}: {e}")
-                self.session = SessionState(identity_path=str(self.agent.persistent_self.identity_file))
+                self.session = SessionState(
+                    identity_path=str(self.agent.persistent_self.identity_file)
+                )
         else:
             self.session = SessionState(identity_path=str(self.agent.persistent_self.identity_file))
 
@@ -64,6 +100,7 @@ class RiemannCLI:
             print("Riemann-J Cognitive Agent - Interactive CLI")
             print("=" * 60)
             print("Type /help for available commands, /quit to exit")
+            print("Tab completion and arrow keys (↑/↓) for command history")
             print()
 
         self.running = True
@@ -75,8 +112,9 @@ class RiemannCLI:
                     prompt = f"... ({buffered_lines} lines) > "
                 else:
                     prompt = "You > "
-                
-                user_input = input(prompt).strip()
+
+                # Use prompt_toolkit for input with tab completion and history
+                user_input = self.prompt_session.prompt(prompt).strip()
                 if user_input or in_multiline:
                     self.handle_input(user_input)
             except (KeyboardInterrupt, EOFError):
@@ -96,17 +134,17 @@ class RiemannCLI:
         """
         # Parse input
         input_type, content = self.input_handler.parse(user_input)
-        
+
         # Handle based on type
         if input_type == InputType.EMPTY:
             return  # Ignore empty input
-        
+
         elif input_type == InputType.COMMAND:
             # Handle command
             should_continue = self.command_handler.handle(content)
             if not should_continue:
                 self.running = False
-        
+
         elif input_type in [InputType.MESSAGE, InputType.MULTILINE]:
             # Validate input
             valid, error_msg = self.input_handler.validate(content)
@@ -116,14 +154,14 @@ class RiemannCLI:
                 else:
                     print(f"Error: {error_msg}")
                 return
-            
+
             # Process as regular conversation
             self._process_message(content)
 
     def _handle_command(self, command: str) -> None:
         """
         Handle meta-commands.
-        
+
         DEPRECATED: Use command_handler.handle() instead.
         This method is kept for backwards compatibility with tests.
         """
@@ -136,11 +174,9 @@ class RiemannCLI:
         # Record user message in session
         if self.session:
             self.session.add_turn("user", text)
-        
+
         # Use conscious agent to process input
-        experience = self.agent.process_consciously(
-            user_id="cli_user", text=text
-        )
+        experience = self.agent.process_consciously(user_id="cli_user", text=text)
 
         # Record agent response in session
         if self.session:

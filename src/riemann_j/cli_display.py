@@ -8,11 +8,12 @@ Phase 2 Implementation: Rich terminal UI with PN visualization.
 """
 
 from typing import List, Optional
+
+from rich import box
 from rich.console import Console
 from rich.panel import Panel
-from rich.text import Text
 from rich.table import Table
-from rich import box
+from rich.text import Text
 
 from .conscious_agent import ConsciousExperience
 
@@ -44,7 +45,9 @@ class DisplayManager:
         if show_metadata:
             metadata_parts = []
             metadata_parts.append(f"PN: {self._format_pn_value(exp)}")
-            metadata_parts.append(f"Uncertainty: {self._colorize_uncertainty(exp.uncertainty_level)}")
+            metadata_parts.append(
+                f"Uncertainty: {self._colorize_uncertainty(exp.uncertainty_level)}"
+            )
             metadata_parts.append(f"Confidence: {self._format_confidence(exp.confidence)}")
 
             if exp.reflection:
@@ -160,6 +163,7 @@ State: {state}
             ("/reset", "Create new identity (requires confirmation)"),
             ("/stats", "Show PN statistics and crisis history"),
             ("/pn", "Show current PN monitor visualization"),
+            ("/inject-state <trigger> [--pn=N] [--crisis]", "Manually inject synthetic state"),
         ]
 
         for cmd, desc in commands:

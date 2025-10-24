@@ -7,8 +7,8 @@ like /introspect, /save, /load, /explain, etc.
 Phase 3 Implementation: Command handlers.
 """
 
-from typing import Optional, TYPE_CHECKING
 from pathlib import Path
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .cli import RiemannCLI
@@ -88,6 +88,14 @@ class CommandHandler:
         elif cmd == "/reset":
             return self._cmd_reset()
 
+        # Inject synthetic state
+        elif cmd.startswith("/inject-state"):
+            parts = command.split(maxsplit=1)
+            if len(parts) < 2:
+                self._print_error("Usage: /inject-state <trigger> [--pn=<value>] [--crisis]")
+                return True
+            return self._cmd_inject_state(parts[1])
+
         # Unknown command
         else:
             self._print_error(f"Unknown command: {command}")
@@ -100,7 +108,9 @@ class CommandHandler:
         """Handle /quit command."""
         # Auto-save session before quitting
         if hasattr(self.cli, "session") and self.cli.session:
-            default_path = f"sessions/{Path(self.cli.agent.persistent_self.identity_file).stem}_autosave.json"
+            default_path = (
+                f"sessions/{Path(self.cli.agent.persistent_self.identity_file).stem}_autosave.json"
+            )
             try:
                 Path(default_path).parent.mkdir(parents=True, exist_ok=True)
                 self.cli.session.save(default_path)
@@ -130,6 +140,12 @@ Available Commands:
   /reset             - Create new identity (requires confirmation)
   /stats             - Show PN statistics and crisis history
   /pn                - Show PN monitor visualization
+  /inject-state <trigger> [--pn=<value>] [--crisis]
+                     - Manually inject a synthetic state
+                       Examples:
+                         /inject-state test crisis situation --crisis
+                         /inject-state high uncertainty --pn=0.8
+                         /inject-state routine event --pn=0.05
 
 Regular messages are processed through the conscious agent.
 Multi-line input: Use ''' or \"\"\" to start/end multi-line mode.
@@ -179,6 +195,7 @@ Multi-line input: Use ''' or \"\"\" to start/end multi-line mode.
         """Handle /save command."""
         if not hasattr(self.cli, "session") or not self.cli.session:
             from .cli_config import SessionState
+
             self.cli.session = SessionState(
                 identity_path=str(self.cli.agent.persistent_self.identity_file)
             )
@@ -240,6 +257,83 @@ Multi-line input: Use ''' or \"\"\" to start/end multi-line mode.
                 self._print_info("Reset cancelled.")
         except (KeyboardInterrupt, EOFError):
             self._print_info("\nReset cancelled.")
+
+        return True
+
+    def _cmd_inject_state(self, args: str) -> bool:
+        """Handle /inject-state command."""
+        import time
+
+        import numpy as np
+
+        from .architecture import SyntheticState
+        from .cli_config import SyntheticStateSpec
+
+        # Parse arguments
+        parts = args.split()
+        if not parts:
+            self._print_error("Trigger description required")
+            return True
+
+        # Extract flags
+        pn_override = None
+        is_crisis = False
+        trigger_parts = []
+
+        for part in parts:
+            if part.startswith("--pn="):
+                try:
+                    pn_override = float(part.split("=")[1])
+                except ValueError:
+                    self._print_error(f"Invalid PN value: {part}")
+                    return True
+            elif part == "--crisis":
+                is_crisis = True
+            else:
+                trigger_parts.append(part)
+
+        trigger = " ".join(trigger_parts)
+
+        # Create and validate spec
+        spec = SyntheticStateSpec(trigger=trigger, pn_override=pn_override, is_crisis=is_crisis)
+
+        valid, error_msg = spec.validate()
+        if not valid:
+            self._print_error(f"Invalid state spec: {error_msg}")
+            return True
+
+        # Generate random latent representation
+        latent_rep = np.random.randn(spec.latent_dim).astype(np.float32)
+
+        # Determine PN value
+        if spec.pn_override is not None:
+            pn_value = spec.pn_override
+        else:
+            # Use current PN or default
+            pn_value = self.cli.agent.meta_monitor.get_current_pn() or 0.0
+            if spec.is_crisis:
+                pn_value = max(pn_value, 0.5)  # Ensure it's high enough for crisis
+
+        # Create synthetic state
+        state = SyntheticState(
+            timestamp=time.time(),
+            latent_representation=latent_rep,
+            source_trigger=f"manual_injection: {spec.trigger}",
+            p_n_at_creation=pn_value,
+            is_j_shift_product=False,
+            status="INJECTED",
+        )
+
+        # Integrate into agent
+        if spec.is_crisis or pn_value >= 0.5:
+            self.cli.agent.persistent_self.integrate_crisis(state)
+            self._print_info(f"✓ Injected crisis state (PN={pn_value:.4f}): {spec.trigger}")
+        else:
+            self.cli.agent.persistent_self.integrate_interaction(state)
+            self._print_info(f"✓ Injected routine state (PN={pn_value:.4f}): {spec.trigger}")
+
+        # Update meta-monitor
+        self.cli.agent.meta_monitor.observe_pn(pn_value)
 
         return True
 
