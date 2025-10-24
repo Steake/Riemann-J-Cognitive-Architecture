@@ -1,0 +1,36 @@
+# Copilot Coding Agent Configuration
+# This file defines resource allocation for the coding agent workspace
+
+# Workspace disk allocation (in GB)
+# Controls the maximum disk space available to the agent's working directory
+# Includes space for: cloned repositories, build artifacts, caches, and temporary files
+workspace_size_gb: 64
+
+# Recommended memory allocation (in GB)
+# Suggested RAM for optimal agent performance during code analysis and builds
+# Adjust based on repository size and build requirements
+recommended_memory_gb: 32
+
+# Recommended CPU cores
+# Suggested number of CPU cores for parallel builds and faster agent operations
+# Higher values improve performance for multi-threaded builds and test suites
+recommended_cpu_cores: 8
+
+# Additional notes
+notes: |
+  These settings are recommendations for running the Copilot coding agent.
+  
+  Workspace Size (64GB):
+  - Provides ample space for large repositories, dependencies, and build artifacts
+  - Essential for projects with extensive test suites or large binary assets
+  - Prevents disk space issues during agent operations
+  
+  Memory & CPU:
+  - Memory recommendation ensures smooth operation for memory-intensive builds
+  - CPU cores recommendation improves build times and test execution
+  - Adjust these values based on your specific infrastructure and requirements
+  
+  Runner Requirements:
+  - GitHub-hosted runners may have limited resources
+  - Self-hosted runners can be configured to meet these specifications
+  - Docker containers can be allocated resources via runtime flags

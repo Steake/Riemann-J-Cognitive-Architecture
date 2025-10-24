@@ -22,6 +22,9 @@
 
 </div>
 
+> **🤖 Copilot Agent Configuration Available**  
+> This repository includes configuration for running GitHub Copilot coding agents with a 64GB workspace and optimized resource allocation. See [`.github/AGENT_SETUP.md`](.github/AGENT_SETUP.md) for setup instructions and usage examples.
+
 ---
 
 ## 🎯 What is Riemann-J?
