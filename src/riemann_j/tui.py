@@ -52,6 +52,9 @@ class TUI(App):
     total_interactions = reactive(0)
     total_crises = reactive(0)
     formative_count = reactive(0)
+    last_crisis_pn = reactive(0.0)
+    last_crisis_iters = reactive(0)
+    last_crisis_type = reactive("none")
 
     # Self-belief
     stability = reactive(0.5)
@@ -170,6 +173,9 @@ class TUI(App):
             f"Failed:       {metrics.failed_resolutions}\n"
             f"Formative:    {self.formative_count}\n"
             f"\n"
+            f"Last Crisis: PN={self.last_crisis_pn:.4f}\n"
+            f"  → {self.last_crisis_iters} iters ({self.last_crisis_type})\n"
+            f"\n"
             f"User Attractor: {self.attractor_size} states\n"
             f"Queue Size:     {self.workspace_q_size}"
         )
@@ -248,18 +254,16 @@ class TUI(App):
         try:
             priority, counter, message = global_workspace.get_nowait()
             if isinstance(message, PredictionErrorSignal) and message.p_n > PN_THRESHOLD:
-                log = self.query_one(RichLog)
-                log.write(
-                    f"[bold red blink]>> J-SHIFT TRIGGERED! PN = {message.p_n:.4f} <<[/bold red blink]"
-                )
                 state_obj = self.workspace._j_operator_resolve(message)
                 self.workspace.log_state(state_obj)
-                response = self.workspace.symbolic_interface.decoder(
-                    state_obj.latent_representation
-                )
-                log.write(
-                    f"[bold yellow]System Internal Response ({state_obj.status}):[/bold yellow] {response}"
-                )
+
+                # HOOK: Let persistent_self track this crisis for metrics
+                self.agent.persistent_self.integrate_crisis(state_obj)
+
+                # Update dashboard crisis info (NO LOG SPAM!)
+                self.last_crisis_pn = message.p_n
+                self.last_crisis_iters = state_obj.analysis.get("iterations", 0)
+                self.last_crisis_type = state_obj.analysis.get("convergence_type", "unknown")
         except queue.Empty:
             pass
 
@@ -287,12 +291,33 @@ class TUI(App):
 /help - Show this help
 /exit, /quit - Exit TUI
 /switch <user> - Switch user context
+/blend <alpha> - Set projection blending (0.0-1.0, default 0.0)
 /inject-state <trigger> [--pn=N] [--crisis] - Inject synthetic state
 /stats - Show system statistics
 /introspect - Show meta-cognitive state
 
 Regular messages are processed through the conscious agent."""
             log.write(help_text)
+            return
+
+        if user_input.startswith("/blend "):
+            try:
+                alpha = float(user_input.split(" ", 1)[1])
+                if 0.0 <= alpha <= 1.0:
+                    import riemann_j.config as cfg
+
+                    cfg.PROJECTION_BLEND_ALPHA = alpha
+                    log.write(f"[bold green]✓ Projection blend set to {alpha:.2f}[/bold green]")
+                    if alpha == 0.0:
+                        log.write("[dim]Pure prompt-based generation (default)[/dim]")
+                    elif alpha < 0.3:
+                        log.write("[dim]Subtle state influence (experimental)[/dim]")
+                    else:
+                        log.write("[dim yellow]⚠️  High blend - may degrade quality[/dim yellow]")
+                else:
+                    log.write("[red]Error: Alpha must be between 0.0 and 1.0[/red]")
+            except (ValueError, IndexError):
+                log.write("[red]Usage: /blend <alpha>  (e.g., /blend 0.1)[/red]")
             return
 
         if user_input == "/stats":
@@ -382,23 +407,33 @@ Competence: {self.competence:.2f}"""
 
     def run_user_processing(self, user_input: str):
         """Process user input through conscious agent (runs in background thread)."""
-        # Use conscious agent for full experience
-        experience = self.agent.process_consciously(user_id=self.current_user, text=user_input)
+        try:
+            # Use conscious agent for full experience
+            experience = self.agent.process_consciously(user_id=self.current_user, text=user_input)
 
-        # Update UI from thread
-        self.call_from_thread(
-            self.query_one(RichLog).write_line,
-            f"[bold cyan]Agent:[/bold cyan] {experience.response}",
-        )
-
-        # Show metadata if high uncertainty
-        if experience.uncertainty_level in ["high", "critical"]:
-            metadata = (
-                f"[dim]Uncertainty: {experience.uncertainty_level} | "
-                f"Confidence: {experience.confidence:.1%} | "
-                f"PN: {self.regulated_pn:.3f}[/dim]"
+            # Update UI from thread - FIXED: use write() not write_line()
+            log = self.query_one(RichLog)
+            self.call_from_thread(
+                log.write,
+                f"[bold cyan]Agent:[/bold cyan] {experience.response}",
             )
-            self.call_from_thread(self.query_one(RichLog).write_line, metadata)
+
+            # Show metadata if high uncertainty
+            if experience.uncertainty_level in ["high", "critical"]:
+                metadata = (
+                    f"[dim]Uncertainty: {experience.uncertainty_level} | "
+                    f"Confidence: {experience.confidence:.1%} | "
+                    f"PN: {self.regulated_pn:.3f}[/dim]"
+                )
+                self.call_from_thread(log.write, metadata)
+        except Exception as e:
+            # Log error to UI so user can see what went wrong
+            import traceback
+
+            error_msg = f"[bold red]Error processing input:[/bold red] {str(e)}"
+            self.call_from_thread(self.query_one(RichLog).write, error_msg)
+            # Also print full traceback to console for debugging
+            traceback.print_exc()
 
 
 def main():

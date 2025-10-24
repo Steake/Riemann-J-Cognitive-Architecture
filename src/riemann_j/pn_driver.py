@@ -45,7 +45,7 @@ class PNDriverRiemannZeta(threading.Thread):
 
             # Simulate finding a zero to release PN pressure periodically.
             # Balance: enough spikes for drama, enough resets for recovery
-            if random.random() < 0.25:  # 25% chance per cycle
+            if random.random() < 0.05:  # 0.5% chance per cycle
                 self.steps_since_last_zero = 0
 
             p_n = self._calculate_pn()
