@@ -258,7 +258,7 @@ class TestMetaCognitiveMonitor:
         assert diagnostics["observation_count"] == 20
 
     def test_pn_history_limit(self):
-        """PNhistory respects max size."""
+        """PN history respects max size."""
         monitor = MetaCognitiveMonitor(pn_history_size=10)
 
         for i in range(20):
