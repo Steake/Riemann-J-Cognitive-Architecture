@@ -16,7 +16,10 @@ from sklearn.mixture import GaussianMixture
 from transformers import LogitsProcessor
 
 from .config import *
-from .shared_resources import device, model, tokenizer
+from .metacognition import MetaCognitiveMonitor
+from .pn_driver import PNDriverRiemannZeta
+from .shared_resources import device, global_workspace, model, tokenizer
+from .uncertainty import UncertaintyInterface
 
 
 @dataclass
@@ -55,6 +58,11 @@ class SymbolicInterface:
         return outputs.hidden_states[-1][0, -1, :].cpu().numpy()
 
     def decoder(self, state_vector: np.ndarray) -> str:
+        """
+        DEPRECATED: State-vector biased generation produces poor output.
+        Use prompt_based_generate() instead for actual text generation.
+        Keeping this for backward compatibility with tests.
+        """
         state_tensor = torch.tensor(state_vector, dtype=torch.float32, device=device)
         logit_bias = self.projection_head(state_tensor)
 
@@ -62,15 +70,56 @@ class SymbolicInterface:
             def __call__(self, input_ids, scores):
                 return scores + logit_bias
 
+        # Use bos_token_id if available, else eos_token_id as fallback
+        start_token_id = (
+            tokenizer.bos_token_id if tokenizer.bos_token_id is not None else tokenizer.eos_token_id
+        )
+
         with torch.no_grad():
             output_ids = model.generate(
                 max_length=50,
                 pad_token_id=tokenizer.eos_token_id,
                 logits_processor=[StateBiasLogitsProcessor()],
-                input_ids=torch.tensor([[tokenizer.bos_token_id]], device=device),
+                input_ids=torch.tensor([[start_token_id]], device=device),
             )
 
         return tokenizer.decode(output_ids[0], skip_special_tokens=True)
+
+    def prompt_based_generate(self, user_input: str) -> str:
+        """
+        Generate response using actual prompt-based LLM generation.
+        This produces coherent text instead of state-vector biased garbage.
+
+        Args:
+            user_input: The user's input text to respond to
+
+        Returns:
+            Generated response text
+        """
+        # Simple prompt for now - can be enhanced with system prompts later
+        prompt = f"User: {user_input}\nAssistant:"
+
+        inputs = tokenizer(prompt, return_tensors="pt").to(device)
+
+        with torch.no_grad():
+            output_ids = model.generate(
+                **inputs,
+                max_new_tokens=50,
+                do_sample=True,
+                temperature=0.7,
+                top_p=0.9,
+                pad_token_id=tokenizer.eos_token_id,
+            )
+
+        # Decode and extract only the assistant's response (after the prompt)
+        full_output = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        # Remove the prompt part to get just the response
+        if "Assistant:" in full_output:
+            response = full_output.split("Assistant:")[-1].strip()
+        else:
+            response = full_output[len(prompt) :].strip()
+
+        return response if response else full_output
 
 
 class UserAttractor:
@@ -81,7 +130,14 @@ class UserAttractor:
 
     def _update_model(self):
         if len(self.state_history) >= self.gmm.n_components:
-            self.gmm.fit(np.array(self.state_history))
+            states = np.array(self.state_history)
+            # Check if states have any variance (avoid GMM fitting error)
+            if np.std(states) > 1e-6:
+                try:
+                    self.gmm.fit(states)
+                except Exception as e:
+                    # Silently skip GMM update if fitting fails (numerical instability)
+                    pass
 
     def add_state(self, state: np.ndarray):
         self.state_history.append(state)
@@ -91,8 +147,12 @@ class UserAttractor:
     def apply_affinity(self, state: np.ndarray) -> np.ndarray:
         if not hasattr(self.gmm, "means_"):
             return state
-        cluster_index = self.gmm.predict(state.reshape(1, -1))[0]
-        centroid = self.gmm.means_[cluster_index]
+        try:
+            cluster_index = self.gmm.predict(state.reshape(1, -1))[0]
+            centroid = self.gmm.means_[cluster_index]
+        except Exception:
+            # GMM not fully fitted or numerical error
+            return state
         influence = (centroid - state) * ATTRACTOR_AFFINITY_STRENGTH
         return state + influence
 
@@ -102,6 +162,12 @@ class CognitiveWorkspace:
         self.symbolic_interface = SymbolicInterface()
         self.user_attractors = {}
         self.log_file = open(LOG_FILE, "a")
+        self.meta_monitor = MetaCognitiveMonitor()  # Phase 1: Meta-cognitive awareness
+        self.uncertainty_interface = UncertaintyInterface()  # Phase 3: Uncertainty awareness
+
+        # Start PN driver thread
+        self.pn_driver = PNDriverRiemannZeta()
+        self.pn_driver.start()
 
     def get_or_create_user(self, user_id: str) -> UserAttractor:
         if user_id not in self.user_attractors:
@@ -211,11 +277,31 @@ class CognitiveWorkspace:
             },
         )
 
+    def _resolve_crisis(self, pn_signal):
+        """
+        Wrapper for J-Operator that hooks meta-cognitive monitoring.
+        """
+        result = self._j_operator_resolve(pn_signal)
+
+        # META-COGNITIVE AWARENESS: System observes its own crisis resolution
+        self.meta_monitor.observe_j_operator_activation(result)
+
+        return result
+
     def process_user_input(self, user_id: str, text: str) -> tuple[str, SyntheticState]:
         user_attractor = self.get_or_create_user(user_id)
         initial_state_vec = self.symbolic_interface.encoder(text)
         attracted_state_vec = user_attractor.apply_affinity(initial_state_vec)
         user_attractor.add_state(attracted_state_vec)
+
+        # PHASE 1: Observe current PN from driver (peek at queue without blocking)
+        try:
+            # Non-blocking peek at PN queue to observe current uncertainty
+            if not global_workspace.empty():
+                priority, counter, pn_signal = global_workspace.queue[0]  # Peek at top
+                self.meta_monitor.observe_pn(pn_signal.p_n)
+        except (IndexError, AttributeError):
+            pass  # No PN available yet, that's fine
 
         state_obj = SyntheticState(
             timestamp=time.time(),
@@ -224,7 +310,15 @@ class CognitiveWorkspace:
             p_n_at_creation=0.0,
             is_j_shift_product=False,
         )
-        response_text = self.symbolic_interface.decoder(attracted_state_vec)
+
+        # Use prompt-based generation for coherent output
+        response_text = self.symbolic_interface.prompt_based_generate(text)
+
+        # Phase 3: Augment response with uncertainty awareness if needed
+        current_pn = self.meta_monitor.get_current_pn()
+        if self.uncertainty_interface.should_communicate_uncertainty(current_pn):
+            response_text = self.uncertainty_interface.augment_response(response_text, current_pn)
+
         return response_text, state_obj
 
     def log_state(self, state: SyntheticState):
@@ -234,6 +328,41 @@ class CognitiveWorkspace:
             "std": float(state.latent_representation.std()),
         }
         self.log_file.write(json.dumps(log_entry) + "\n")
+
+    def get_self_report(self, verbose: bool = False) -> str:
+        """
+        Generate natural language self-report of internal state.
+
+        This is the system's introspective voice - its ability to
+        articulate what it's experiencing internally.
+        """
+        return self.meta_monitor.generate_self_report(verbose=verbose)
+
+    def should_report_uncertainty(self) -> bool:
+        """
+        Check if system should proactively communicate its uncertainty.
+        """
+        return self.meta_monitor.should_report_uncertainty()
+
+    def get_uncertainty_report(self) -> str:
+        """
+        Generate detailed uncertainty report showing classification,
+        confidence, and diagnostic information.
+        """
+        current_pn = self.meta_monitor.get_current_pn()
+        report = self.uncertainty_interface.generate_uncertainty_report(current_pn)
+
+        lines = [
+            f"Uncertainty Level: {report.uncertainty_level.upper()}",
+            f"Confidence Modifier: {report.confidence_modifier:.2f}",
+            f"Current PN: {report.pn_value:.4f}",
+            f"Should Communicate: {report.should_communicate}",
+            "",
+            "Explanation:",
+            report.explanation,
+        ]
+
+        return "\n".join(lines)
 
     def close(self):
         self.log_file.close()

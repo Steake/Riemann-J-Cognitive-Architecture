@@ -51,6 +51,7 @@ decoder_projection_head.pth
 # Temporary test and output files
 test_output.txt
 *_output.txt
+demo_outputs/
 
 # Coverage reports
 htmlcov/

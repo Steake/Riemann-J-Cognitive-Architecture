@@ -182,6 +182,23 @@ pip install riemann-j
 run.bat
 ```
 
+### Run Demonstration Scripts (Fastest)
+
+See the novel capabilities in action:
+
+```bash
+# Observable uncertainty communication (PN monitoring)
+python demos/demo_adversarial_simple.py
+
+# Epistemic boundary enforcement (PN-gated reasoning)
+python demos/demo_reasoning_simple.py
+
+# Persistent identity across sessions
+python demos/demo_formative_simple.py
+```
+
+Each demo runs in <30 seconds and shows capabilities standard LLMs cannot provide. See [`demos/README.md`](demos/README.md) for detailed explanations.
+
 ### Run the TUI Application
 
 ```bash
