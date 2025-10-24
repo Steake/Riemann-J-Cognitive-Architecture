@@ -76,9 +76,7 @@ class TUI(App):
                     yield Sparkline(
                         self.pn_history,
                         id="pn_sparkline",
-                        summary_function=lambda data: (
-                            f"Current: {data[-1]:.4f}" if data else "0.0000"
-                        ),
+                        summary_function=max,  # Use max value for summary
                     )
                     yield Static(id="pn_details")
                     yield Static(id="critical_strip")
