@@ -301,31 +301,42 @@ class PersistentSelf:
             "crisis_resolution_rate": self.metrics.crisis_resolution_rate(),
         }
 
-    def reference_past_experience(self, current_pn: float) -> Optional[str]:
+    def reference_past_experience(self, current_input: str) -> Optional[str]:
         """
-        Reference similar past experience based on current PN.
+        Reference similar past experience based on current situation description.
+
+        Args:
+            current_input: Description of the current situation or input
+
+        Returns:
+            Reference to similar past experience, or None if no relevant match found
 
         This is memory: "I've been in this state before."
         """
         if not self.formative_experiences:
             return None
 
-        # Find experience with similar PN
-        similar_experiences = [
-            exp for exp in self.formative_experiences if "PN=" in exp.description
-        ]
+        # Simple keyword-based matching for now
+        # TODO: Use embeddings for semantic similarity in future
+        current_lower = current_input.lower()
+        keywords = set(current_lower.split())
 
-        if not similar_experiences:
+        # Find experiences with overlapping keywords
+        scored_experiences = []
+        for exp in self.formative_experiences:
+            exp_lower = exp.description.lower()
+            exp_keywords = set(exp_lower.split())
+            overlap = len(keywords & exp_keywords)
+
+            if overlap > 0:
+                scored_experiences.append((overlap, exp))
+
+        if not scored_experiences:
             return None
 
-        # Get closest PN match
-        def extract_pn(exp):
-            try:
-                return float(exp.description.split("PN=")[1].split()[0])
-            except:
-                return 0.0
-
-        closest = min(similar_experiences, key=lambda exp: abs(extract_pn(exp) - current_pn))
+        # Get best match by keyword overlap
+        scored_experiences.sort(key=lambda x: x[0], reverse=True)
+        closest = scored_experiences[0][1]
 
         age_str = (
             f"{closest.age_days():.1f} days ago"

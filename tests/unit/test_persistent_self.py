@@ -264,14 +264,15 @@ class TestPersistentSelf:
         """Test referencing similar past experiences."""
         ps = PersistentSelf(identity_file=temp_identity_file)
 
-        # Add experience with known PN
+        # Add experience with known description
         crisis = create_test_crisis(pn=0.92, converged=True, iterations=30)
         ps.integrate_crisis(crisis)
 
-        # Reference similar PN
-        reference = ps.reference_past_experience(current_pn=0.93)
+        # Reference using semantic keywords from crisis description
+        # The crisis description typically contains "crisis" keyword
+        reference = ps.reference_past_experience(current_input="crisis situation encountered")
 
-        if reference:  # May not find match depending on description parsing
+        if reference:  # May not find match depending on keyword overlap
             assert "reminds me of" in reference.lower()
 
     def test_experience_density(self, temp_identity_file):
