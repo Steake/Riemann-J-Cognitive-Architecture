@@ -48,6 +48,17 @@ p_n = 1 / (1 + exp(-x))  # x based on steps since last zero
 
 **Why this matters**: Traditional AI systems optimize toward stability. Riemann-J uses mathematical uncertainty to maintain dynamic equilibrium.
 
+### ⚖️ The Equilibrium Regulator (Homeostatic Control)
+
+Background daemon that **consumes PN signals** and applies continuous homeostatic pressure:
+
+- 🎯 **Target Seeking**: Exponential decay toward PN = 0.5 (critical threshold)
+- ⏱️ **Time Constant**: ~20 seconds for equilibration after perturbations
+- 🔄 **Crisis Detection**: Triggers integration when PN crosses threshold (with hysteresis)
+- 🧬 **Autonomic System**: Maintains balance without conscious intervention
+
+**Why this matters**: Provides attractor basin dynamics—perturbations push PN away, homeostasis restores balance. This is the missing feedback loop that makes the architecture genuinely self-regulating.
+
 ### 🧠 The J-Operator (Cognitive Framework)
 
 When prediction error exceeds threshold (PN > 0.9), the **J-Operator** resolves symbolic failure through continuous state transformation:

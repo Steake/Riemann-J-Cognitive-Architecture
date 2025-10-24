@@ -332,8 +332,9 @@ Multi-line input: Use ''' or \"\"\" to start/end multi-line mode.
             self.cli.agent.persistent_self.integrate_interaction(state)
             self._print_info(f"✓ Injected routine state (PN={pn_value:.4f}): {spec.trigger}")
 
-        # Update meta-monitor
-        self.cli.agent.meta_monitor.observe_pn(pn_value)
+        # Inject perturbation into equilibrium regulator
+        # This jumps the PN to the injected value, then homeostasis resumes
+        self.cli.agent.equilibrium_regulator.inject_perturbation(pn_value)
 
         return True
 

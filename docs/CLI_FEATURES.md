@@ -70,11 +70,18 @@ When you inject a synthetic state:
    - If PN ≥ 0.5 OR `--crisis` flag: → `integrate_crisis()`
    - Otherwise: → `integrate_interaction()`
 
-3. **Effects**:
-   - Meta-monitor observes the PN value
+3. **Equilibrium Perturbation**:
+   - Injected PN value is sent to `EquilibriumRegulator.inject_perturbation()`
+   - PN **jumps immediately** to the injected value
+   - Background regulator thread **resumes homeostatic decay** toward target (0.5)
+   - Time constant: ~20 seconds for equilibration
+
+4. **Effects**:
+   - Meta-monitor continuously observes regulated PN
    - High PN crises may become formative experiences
    - Identity metrics updated (total interactions/crises)
-   - PN history tracks the injection
+   - PN naturally decays back toward equilibrium over time
+   - **Real-time observation**: Watch PN trajectory using `/pn` sparkline
 
 ### Inspecting Effects
 
@@ -100,26 +107,36 @@ Then try this sequence:
 # 1. Check baseline state
 /stats
 /identity
+/pn             # Check current PN baseline
 
-# 2. Inject a crisis
+# 2. Inject a crisis and observe equilibration
 /inject-state system overload --pn=0.85 --crisis
 
-# 3. Check impact
+# 3. Watch PN decay toward equilibrium (repeat every few seconds)
+/pn             # Shows PN spike, then gradual decay toward 0.5
+/pn             # After 5 seconds: PN should be lower
+/pn             # After 10 seconds: approaching 0.6
+/pn             # After 20 seconds: near equilibrium at ~0.5
+
+# 4. Check identity impact
 /stats          # Should show 1 crisis
 /introspect     # Shows updated beliefs
 /identity       # May show new formative experience
 
-# 4. Inject routine states
+# 5. Inject routine states
 /inject-state normal query --pn=0.02
-/inject-state another query --pn=0.03
+/pn             # PN jumps to 0.02, then drifts back up toward 0.5
 
-# 5. Visualize PN timeline
-/pn             # Shows PN spike from crisis
+# 6. Test equilibrium restoration
+/inject-state test --pn=0.95
+/pn             # High spike
+# Wait 30 seconds, check again:
+/pn             # Should be approaching 0.5
 
-# 6. Have a conversation
+# 7. Have a conversation
 Hello, how do you feel after that crisis?
 
-# 7. Explain the past
+# 8. Explain the past
 /explain crisis situation
 ```
 
