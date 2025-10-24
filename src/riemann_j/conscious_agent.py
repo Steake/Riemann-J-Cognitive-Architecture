@@ -311,18 +311,20 @@ class ConsciousAgent:
 
         return "\n".join(narrative_lines)
 
-    def explain_past_behavior(self) -> Optional[str]:
+    def explain_past_behavior(self, current_input: str) -> Optional[str]:
         """
         Reference past experiences to explain current behavior.
 
         This enables the agent to say things like "I remember struggling with
         similar inputs before" or "This reminds me of when..."
 
+        Args:
+            current_input: Description of the current situation or input to reference
+
         Returns:
             Explanation referencing past experiences, or None if no relevance found
         """
-        current_pn = self.meta_monitor.get_current_pn()
-        return self.persistent_self.reference_past_experience(current_pn)
+        return self.persistent_self.reference_past_experience(current_input)
 
     # ===== Phase 4.2: Predictive Self-Modeling =====
 
