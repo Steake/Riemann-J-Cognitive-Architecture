@@ -162,44 +162,55 @@ if [ "$RUN_DEMOS" = true ]; then
     echo "=================================="
     echo ""
     
+    # Create demo output directory with timestamp
+    DEMO_OUTPUT_DIR="demo_outputs/$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$DEMO_OUTPUT_DIR"
+    echo "📁 Demo outputs will be saved to: $DEMO_OUTPUT_DIR"
+    echo ""
+    
     DEMO_EXIT_CODE=0
     
     run_demo() {
         local demo_name=$1
         local demo_file=$2
         local timeout_duration=${3:-60}
+        local output_file="${DEMO_OUTPUT_DIR}/$(basename ${demo_file%.py}).txt"
         
         echo "▶ Running $demo_name..."
-        if timeout $timeout_duration python "$demo_file" > /dev/null 2>&1; then
+        if timeout $timeout_duration python "$demo_file" > "$output_file" 2>&1; then
             echo "  ✅ $demo_name completed successfully"
+            echo "     Output saved to: $output_file"
         else
             echo "  ❌ $demo_name failed or timed out"
+            echo "     Error log saved to: $output_file"
             DEMO_EXIT_CODE=1
         fi
     }
     
     case $DEMO_TYPE in
         adversarial)
-            run_demo "Adversarial Transparency Demo" "demos/demo_adversarial_simple.py" 45
+            run_demo "Adversarial Transparency Demo" "demos/demo_adversarial_simple.py" 90
             ;;
         reasoning)
-            run_demo "Uncertainty-Gated Reasoning Demo" "demos/demo_reasoning_simple.py" 45
+            run_demo "Uncertainty-Gated Reasoning Demo" "demos/demo_reasoning_simple.py" 90
             ;;
         formative)
-            run_demo "Formative Experience Demo" "demos/demo_formative_simple.py" 45
+            run_demo "Formative Experience Demo" "demos/demo_formative_simple.py" 90
             ;;
         all)
-            run_demo "Adversarial Transparency Demo" "demos/demo_adversarial_simple.py" 45
-            run_demo "Uncertainty-Gated Reasoning Demo" "demos/demo_reasoning_simple.py" 45
-            run_demo "Formative Experience Demo" "demos/demo_formative_simple.py" 45
+            run_demo "Adversarial Transparency Demo" "demos/demo_adversarial_simple.py" 90
+            run_demo "Uncertainty-Gated Reasoning Demo" "demos/demo_reasoning_simple.py" 90
+            run_demo "Formative Experience Demo" "demos/demo_formative_simple.py" 90
             ;;
     esac
     
     echo ""
     if [ $DEMO_EXIT_CODE -eq 0 ]; then
         echo "✅ All demos completed successfully!"
+        echo "📊 View demo outputs in: $DEMO_OUTPUT_DIR"
     else
         echo "❌ Some demos failed"
+        echo "📊 Check error logs in: $DEMO_OUTPUT_DIR"
         EXIT_CODE=1
     fi
 fi

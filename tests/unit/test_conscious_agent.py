@@ -76,10 +76,10 @@ def mock_workspace():
 def create_mock_persistent_self():
     """Create a properly configured PersistentSelf mock."""
     mock_self = Mock()
-    
+
     # Make formative_experiences behave like a list
     mock_self.formative_experiences = []
-    
+
     # Mock methods that tests use
     mock_self.integrate_interaction = Mock()
     mock_self.integrate_crisis = Mock()
@@ -87,12 +87,12 @@ def create_mock_persistent_self():
     mock_self.generate_autobiography = Mock(return_value="Test autobiography")
     mock_self.reference_past_experience = Mock(return_value=None)
     mock_self.get_most_impactful_experiences = Mock(return_value=[])
-    
+
     # Mock metrics
     mock_self.metrics = Mock()
     mock_self.metrics.total_interactions = 0
     mock_self.metrics.age_days = Mock(return_value=0.1)
-    
+
     return mock_self
 
 
@@ -102,7 +102,7 @@ class TestConsciousAgent:
     def test_initialization(self, mock_workspace, temp_identity_dir):
         """Test agent initialization with workspace."""
         mock_self = create_mock_persistent_self()
-        
+
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace, self_id="test_agent")
 
@@ -114,7 +114,7 @@ class TestConsciousAgent:
     def test_sense(self, mock_workspace, temp_identity_dir):
         """Test sensing internal state."""
         mock_self = create_mock_persistent_self()
-        
+
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace)
 
@@ -128,7 +128,7 @@ class TestConsciousAgent:
     def test_infer_uncertainty(self, mock_workspace, temp_identity_dir):
         """Test inferring uncertainty from PN."""
         mock_self = create_mock_persistent_self()
-        
+
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace)
 
@@ -141,7 +141,7 @@ class TestConsciousAgent:
     def test_act(self, mock_workspace, temp_identity_dir):
         """Test acting on input."""
         mock_self = create_mock_persistent_self()
-        
+
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace)
 
@@ -153,7 +153,7 @@ class TestConsciousAgent:
     def test_reflect_routine(self, mock_workspace, temp_identity_dir):
         """Test reflection on routine interaction."""
         mock_self = create_mock_persistent_self()
-        
+
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace)
 
@@ -173,7 +173,7 @@ class TestConsciousAgent:
     def test_reflect_high_uncertainty(self, mock_workspace, temp_identity_dir):
         """Test reflection on high uncertainty interaction."""
         mock_self = create_mock_persistent_self()
-        
+
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace)
 
@@ -193,7 +193,7 @@ class TestConsciousAgent:
     def test_reflect_low_confidence(self, mock_workspace, temp_identity_dir):
         """Test reflection on low confidence interaction."""
         mock_self = create_mock_persistent_self()
-        
+
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace)
 
@@ -213,11 +213,9 @@ class TestConsciousAgent:
     def test_reflect_crisis_resolution(self, mock_workspace, temp_identity_dir):
         """Test reflection after crisis resolution."""
         mock_self = create_mock_persistent_self()
-        
+
         # Need to set crisis_memory, not crisis_history
-        mock_workspace.meta_monitor.crisis_memory = [
-            {"converged": True, "timestamp": time.time()}
-        ]
+        mock_workspace.meta_monitor.crisis_memory = [{"converged": True, "timestamp": time.time()}]
 
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace)
@@ -253,7 +251,7 @@ class TestConsciousAgent:
                 confidence=0.9,
                 response="test response",
             )
-            
+
             # Create a mock state for persist
             mock_state = Mock()
             mock_state.timestamp = time.time()
@@ -367,7 +365,9 @@ class TestConsciousAgent:
     def test_get_formative_narrative(self, mock_workspace, temp_identity_dir):
         """Test generating formative narrative."""
         mock_self = create_mock_persistent_self()
-        mock_self.get_most_impactful_experiences = Mock(return_value=[])  # Return empty list, not Mock
+        mock_self.get_most_impactful_experiences = Mock(
+            return_value=[]
+        )  # Return empty list, not Mock
 
         with patch("src.riemann_j.conscious_agent.PersistentSelf", return_value=mock_self):
             agent = ConsciousAgent(mock_workspace)
