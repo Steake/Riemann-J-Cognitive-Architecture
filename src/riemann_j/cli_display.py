@@ -29,6 +29,7 @@ class DisplayManager:
             console: Rich console instance (creates default if not provided)
         """
         self.console = console or Console()
+        self.show_status_bar = True  # Toggle with /toggle-status command
 
     def render_response(self, exp: ConsciousExperience, show_metadata: bool = True) -> None:
         """
@@ -144,6 +145,62 @@ State: {state}
         )
         self.console.print(panel)
 
+    def render_status_bar(self, agent) -> None:
+        """
+        Render live status bar with current PN, uncertainty, and stats.
+
+        Args:
+            agent: ConsciousAgent instance to extract stats from
+        """
+        if not self.show_status_bar:
+            return
+
+        # Get current stats
+        current_pn = agent.meta_monitor.get_current_pn() or 0.0
+        pn_history = list(agent.meta_monitor.pn_history)
+
+        # Get uncertainty state
+        uncertainty_level = agent.uncertainty_interface.classify_uncertainty(current_pn)
+
+        # Color code based on PN
+        if current_pn >= 0.8:
+            pn_color = "red"
+            state_emoji = "🔴"
+        elif current_pn >= 0.5:
+            pn_color = "yellow"
+            state_emoji = "🟡"
+        else:
+            pn_color = "green"
+            state_emoji = "🟢"
+
+        # Create mini sparkline (last 20 values)
+        if pn_history:
+            mini_sparkline = self._create_sparkline(pn_history, width=20)
+        else:
+            mini_sparkline = "▁" * 20
+
+        # Get identity stats
+        metrics = agent.persistent_self.metrics
+
+        # Build status bar
+        status_text = Text()
+        status_text.append(f"{state_emoji} PN: ", style="bold")
+        status_text.append(f"{current_pn:.3f} ", style=f"bold {pn_color}")
+        status_text.append(mini_sparkline, style=pn_color)
+        status_text.append(f" │ {uncertainty_level.upper()}", style=f"{pn_color}")
+        status_text.append(f" │ Interactions: {metrics.total_interactions}", style="dim")
+        status_text.append(f" │ Crises: {metrics.total_crises}", style="dim")
+        status_text.append(f" │ Formative: {metrics.formative_experiences}", style="dim cyan")
+
+        # Render as panel
+        panel = Panel(
+            status_text,
+            border_style="dim",
+            box=box.MINIMAL,
+            padding=(0, 1),
+        )
+        self.console.print(panel)
+
     def render_help(self) -> None:
         """Display available commands in a formatted table."""
         table = Table(title="Available Commands", box=box.ROUNDED, show_header=True)
@@ -164,6 +221,7 @@ State: {state}
             ("/stats", "Show PN statistics and crisis history"),
             ("/pn", "Show current PN monitor visualization"),
             ("/inject-state <trigger> [--pn=N] [--crisis]", "Manually inject synthetic state"),
+            ("/toggle-status", "Toggle live status bar display"),
         ]
 
         for cmd, desc in commands:

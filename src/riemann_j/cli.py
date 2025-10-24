@@ -71,6 +71,7 @@ class RiemannCLI:
             "/stats",
             "/pn",
             "/inject-state",
+            "/toggle-status",
         ]
         self.completer = WordCompleter(commands, ignore_case=True)
         self.prompt_session = PromptSession(
@@ -89,6 +90,9 @@ class RiemannCLI:
                 )
         else:
             self.session = SessionState(identity_path=str(self.agent.persistent_self.identity_file))
+
+        # CLI-specific state: show status after each interaction
+        self.show_status_bar = False  # Disabled by default, enable with /toggle-status
 
     def run(self) -> None:
         """Start interactive REPL loop."""
@@ -199,6 +203,10 @@ class RiemannCLI:
             experience: The conscious experience to display
         """
         if self.use_rich:
+            # Show status bar if enabled
+            if self.show_status_bar:
+                self.display.render_status_bar(self.agent)
+
             # Rich formatted display
             show_metadata = experience.uncertainty_level in ["high", "critical", "moderate"]
             self.display.render_response(experience, show_metadata=show_metadata)

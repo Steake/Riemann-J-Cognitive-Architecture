@@ -1,33 +1,96 @@
 /* tui.css */
-/* WHY: A dedicated CSS file separates presentation from logic, making the UI
-   easier to style and maintain. */
+/* Comprehensive styling for live dashboard TUI */
 
 #main_container {
     layout: vertical;
 }
 
-#dashboard {
-    height: 5;
+/* Live Dashboard - takes top portion */
+#live_dashboard {
+    height: 20;
     layout: horizontal;
+    border: heavy cyan;
+    background: $surface;
+}
+
+/* PN Column */
+#pn_column {
+    width: 35%;
+    padding: 0 1;
+}
+
+#pn_title {
+    height: 1;
+    color: cyan;
+    text-style: bold;
 }
 
 #pn_sparkline {
-    width: 60%;
+    height: 6;
     border: round green;
 }
 
-#status_display {
-    width: 40%;
-    border: round cyan;
+#pn_details {
+    height: 5;
     padding: 0 1;
 }
 
+#critical_strip {
+    height: auto;
+    padding: 0 1;
+}
+
+/* Metrics Column */
+#metrics_column {
+    width: 35%;
+    padding: 0 1;
+    border-left: solid cyan;
+}
+
+#metrics_title {
+    height: 1;
+    color: cyan;
+    text-style: bold;
+}
+
+#metrics_display {
+    height: 8;
+    padding: 0 1;
+}
+
+#belief_display {
+    height: auto;
+    padding: 0 1;
+}
+
+/* Regulator Column */
+#regulator_column {
+    width: 30%;
+    padding: 0 1;
+    border-left: solid cyan;
+}
+
+#eq_title {
+    height: 1;
+    color: cyan;
+    text-style: bold;
+}
+
+#regulator_display {
+    height: auto;
+    padding: 0 1;
+}
+
+/* Conversation Log */
 #conversation_log {
     border: round white;
     padding: 0 1;
+    height: 1fr;
 }
 
+/* User Input */
 #user_input {
     dock: bottom;
     height: 3;
+    border: heavy yellow;
 }

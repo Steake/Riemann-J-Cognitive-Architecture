@@ -29,20 +29,62 @@ if ! python -c "import riemann_j" 2>/dev/null; then
     exit 1
 fi
 
-echo "🚀 Starting Riemann-J TUI..."
+echo "🚀 Starting Riemann-J..."
 echo ""
-echo "Commands:"
-echo "  - Type messages to interact with the agent"
-echo "  - /switch <username> - Switch user context"
-echo "  - /exit - Exit the application"
+
+# Parse command line arguments
+MODE="cli"
+ARGS=()
+
+for arg in "$@"; do
+    case $arg in
+        --tui)
+            MODE="tui"
+            ARGS+=("$arg")
+            ;;
+        *)
+            ARGS+=("$arg")
+            ;;
+    esac
+done
+
+if [ "$MODE" == "tui" ]; then
+    echo "Mode: Full-Screen TUI (Textual UI)"
+    echo ""
+    echo "Commands:"
+    echo "  - Type messages to interact with the agent"
+    echo "  - /help - Show all available commands"
+    echo "  - /stats - Show cognitive metrics"
+    echo "  - /introspect - Show current mental state"
+    echo "  - /inject-state <name> [--pn=0.8] [--crisis] - Inject synthetic state"
+    echo "  - /switch <username> - Switch user context"
+    echo "  - /quit or /exit - Exit the application"
+    echo ""
+    echo "Dashboard updates live at 4 Hz"
+else
+    echo "Mode: Interactive CLI (Command-Line Interface)"
+    echo ""
+    echo "Commands:"
+    echo "  - Type messages to interact with the agent"
+    echo "  - /help - Show all available commands"
+    echo "  - /stats - Show cognitive metrics"
+    echo "  - /pn - Show PN trajectory (last 50 values)"
+    echo "  - /introspect - Show current mental state"
+    echo "  - /inject-state <name> [--pn=0.8] [--crisis] - Inject synthetic state"
+    echo "  - /toggle-status - Toggle status bar display"
+    echo "  - /exit - Exit the application"
+    echo ""
+    echo "Tip: Use --tui flag for full-screen dashboard"
+fi
+
 echo ""
 echo "Press Ctrl+C to exit"
 echo ""
 echo "=================================="
 echo ""
 
-# Run the application
-python -m riemann_j
+# Run the application with parsed arguments
+python -m riemann_j "${ARGS[@]}"
 
 echo ""
 echo "✅ Application closed."

@@ -96,6 +96,10 @@ class CommandHandler:
                 return True
             return self._cmd_inject_state(parts[1])
 
+        # Toggle status bar
+        elif cmd == "/toggle-status":
+            return self._cmd_toggle_status()
+
         # Unknown command
         else:
             self._print_error(f"Unknown command: {command}")
@@ -336,6 +340,13 @@ Multi-line input: Use ''' or \"\"\" to start/end multi-line mode.
         # This jumps the PN to the injected value, then homeostasis resumes
         self.cli.agent.equilibrium_regulator.inject_perturbation(pn_value)
 
+        return True
+
+    def _cmd_toggle_status(self) -> bool:
+        """Handle /toggle-status command."""
+        self.cli.show_status_bar = not self.cli.show_status_bar
+        state = "enabled" if self.cli.show_status_bar else "disabled"
+        self._print_info(f"Status bar {state} (shows after each response)")
         return True
 
     # Helper methods
