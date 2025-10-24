@@ -48,7 +48,7 @@ def force_crisis_and_wait_for_formative(agent: ConsciousAgent, pn_threshold: flo
                     print(f"  [DEBUG] Triggering J-Operator with PN={signal.p_n:.4f}")
 
                     crisis_state = agent.workspace._j_operator_resolve(signal)
-                    agent.persistent_self.process_crisis(crisis_state)
+                    agent.persistent_self.integrate_crisis(crisis_state)
                     return True
             except Exception as e:
                 pass
