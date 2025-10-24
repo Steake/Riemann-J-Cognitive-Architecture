@@ -6,6 +6,7 @@ providing access to meta-cognitive introspection and persistent identity feature
 
 Phase 1 Implementation: Basic REPL with ConsciousAgent integration.
 Phase 2 Implementation: Rich terminal UI with display manager.
+Phase 3 Implementation: Advanced input handling and commands.
 """
 
 import sys
@@ -14,18 +15,22 @@ from typing import Optional
 from .architecture import CognitiveWorkspace
 from .conscious_agent import ConsciousAgent, ConsciousExperience
 from .cli_display import DisplayManager
+from .cli_input import InputHandler, InputType
+from .cli_commands import CommandHandler
+from .cli_config import SessionState
 
 
 class RiemannCLI:
     """Interactive CLI for Riemann-J cognitive agent."""
 
-    def __init__(self, identity_path: Optional[str] = None, use_rich: bool = True):
+    def __init__(self, identity_path: Optional[str] = None, use_rich: bool = True, session_path: Optional[str] = None):
         """
         Initialize CLI with optional persistent identity.
 
         Args:
             identity_path: Path to persistent identity directory (creates if missing)
             use_rich: Whether to use rich formatting (default: True)
+            session_path: Path to session file to load
         """
         self.workspace = CognitiveWorkspace()
         self.agent = ConsciousAgent(
@@ -35,12 +40,25 @@ class RiemannCLI:
         self.running = False
         self.use_rich = use_rich
         self.display = DisplayManager() if use_rich else None
+        self.input_handler = InputHandler()
+        self.command_handler = CommandHandler(self)
+        
+        # Session management
+        self.session: Optional[SessionState] = None
+        if session_path:
+            try:
+                self.session = SessionState.load(session_path)
+            except Exception as e:
+                print(f"Warning: Could not load session from {session_path}: {e}")
+                self.session = SessionState(identity_path=str(self.agent.persistent_self.identity_file))
+        else:
+            self.session = SessionState(identity_path=str(self.agent.persistent_self.identity_file))
 
     def run(self) -> None:
         """Start interactive REPL loop."""
         # Display welcome banner
         if self.use_rich:
-            self.display.render_welcome(self.agent.persistent_self.self_id)
+            self.display.render_welcome(str(self.agent.persistent_self.identity_file))
         else:
             print("=" * 60)
             print("Riemann-J Cognitive Agent - Interactive CLI")
@@ -51,8 +69,15 @@ class RiemannCLI:
         self.running = True
         while self.running:
             try:
-                user_input = input("You > ").strip()
-                if user_input:
+                # Show multiline prompt if in multiline mode
+                in_multiline, buffered_lines = self.input_handler.get_multiline_status()
+                if in_multiline:
+                    prompt = f"... ({buffered_lines} lines) > "
+                else:
+                    prompt = "You > "
+                
+                user_input = input(prompt).strip()
+                if user_input or in_multiline:
                     self.handle_input(user_input)
             except (KeyboardInterrupt, EOFError):
                 print("\n\nGraceful shutdown...")
@@ -69,74 +94,63 @@ class RiemannCLI:
         Args:
             user_input: User's text input
         """
-        # Check if it's a command
-        if user_input.startswith("/"):
-            self._handle_command(user_input)
-        else:
+        # Parse input
+        input_type, content = self.input_handler.parse(user_input)
+        
+        # Handle based on type
+        if input_type == InputType.EMPTY:
+            return  # Ignore empty input
+        
+        elif input_type == InputType.COMMAND:
+            # Handle command
+            should_continue = self.command_handler.handle(content)
+            if not should_continue:
+                self.running = False
+        
+        elif input_type in [InputType.MESSAGE, InputType.MULTILINE]:
+            # Validate input
+            valid, error_msg = self.input_handler.validate(content)
+            if not valid:
+                if self.use_rich:
+                    self.display.print_error(error_msg)
+                else:
+                    print(f"Error: {error_msg}")
+                return
+            
             # Process as regular conversation
-            self._process_message(user_input)
+            self._process_message(content)
 
     def _handle_command(self, command: str) -> None:
-        """Handle meta-commands."""
-        cmd = command.lower().strip()
-
-        if cmd == "/quit" or cmd == "/exit":
+        """
+        Handle meta-commands.
+        
+        DEPRECATED: Use command_handler.handle() instead.
+        This method is kept for backwards compatibility with tests.
+        """
+        should_continue = self.command_handler.handle(command)
+        if not should_continue:
             self.running = False
-            if self.use_rich:
-                self.display.print_info("Goodbye!")
-            else:
-                print("Goodbye!")
-
-        elif cmd == "/help":
-            self._show_help()
-
-        elif cmd.startswith("/introspect"):
-            verbose = "brief" not in cmd
-            report = self.agent.introspect(verbose=verbose)
-            if self.use_rich:
-                self.display.render_meta_state(report)
-            else:
-                print(f"\n{report}\n")
-
-        elif cmd.startswith("/identity"):
-            narrative = self.agent.get_formative_narrative()
-            if self.use_rich:
-                self.display.render_identity(narrative)
-            else:
-                print(f"\n{narrative}\n")
-
-        elif cmd == "/stats":
-            # Show PN statistics
-            report = self.agent.meta_monitor.generate_self_report(verbose=True)
-            if self.use_rich:
-                self.display.render_meta_state(report)
-            else:
-                print(f"\n{report}\n")
-
-        elif cmd == "/pn":
-            # Show PN monitor visualization
-            pn_history = self.agent.meta_monitor.pn_history
-            current_pn = self.agent.meta_monitor.get_current_pn() or 0.0
-            if self.use_rich:
-                self.display.render_pn_monitor(pn_history, current_pn)
-            else:
-                print(f"\nCurrent PN: {current_pn:.4f}")
-                print(f"History: {pn_history[-10:]}\n")
-
-        else:
-            if self.use_rich:
-                self.display.print_error(f"Unknown command: {command}")
-                self.display.print_info("Type /help for available commands")
-            else:
-                print(f"Unknown command: {command}")
-                print("Type /help for available commands")
 
     def _process_message(self, text: str) -> None:
         """Process regular conversation message."""
+        # Record user message in session
+        if self.session:
+            self.session.add_turn("user", text)
+        
         # Use conscious agent to process input
         experience = self.agent.process_consciously(
             user_id="cli_user", text=text
         )
+
+        # Record agent response in session
+        if self.session:
+            current_pn = self.agent.meta_monitor.get_current_pn()
+            self.session.add_turn(
+                "agent",
+                experience.response,
+                pn=current_pn,
+                confidence=experience.confidence,
+            )
 
         # Display response
         self.display_response(experience)

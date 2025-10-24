@@ -149,11 +149,15 @@ State: {state}
 
         commands = [
             ("/help", "Show this help message"),
-            ("/quit, /exit", "Exit the CLI"),
+            ("/quit, /exit", "Exit the CLI (auto-saves session)"),
             ("/introspect", "Show detailed meta-cognitive state"),
             ("/introspect-brief", "Show concise meta-cognitive state"),
             ("/identity", "Display persistent identity narrative"),
             ("/identity-brief", "Display summary identity"),
+            ("/explain <input>", "Explain past behavior on similar input"),
+            ("/save [path]", "Save current session"),
+            ("/load <path>", "Load previous session"),
+            ("/reset", "Create new identity (requires confirmation)"),
             ("/stats", "Show PN statistics and crisis history"),
             ("/pn", "Show current PN monitor visualization"),
         ]
@@ -163,7 +167,10 @@ State: {state}
 
         self.console.print(table)
         self.console.print(
-            "\n[dim]Regular messages are processed through the conscious agent.[/dim]\n"
+            "\n[dim]Regular messages are processed through the conscious agent.[/dim]"
+        )
+        self.console.print(
+            "[dim]Multi-line input: Use ''' or \"\"\" to start/end multi-line mode.[/dim]\n"
         )
 
     def render_welcome(self, identity_name: str) -> None:
