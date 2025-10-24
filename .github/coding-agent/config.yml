@@ -4,7 +4,7 @@
 # Workspace disk allocation (in GB)
 # Controls the maximum disk space available to the agent's working directory
 # Includes space for: cloned repositories, build artifacts, caches, and temporary files
-workspace_size_gb: 64
+workspace_size_gb: 128
 
 # Recommended memory allocation (in GB)
 # Suggested RAM for optimal agent performance during code analysis and builds
