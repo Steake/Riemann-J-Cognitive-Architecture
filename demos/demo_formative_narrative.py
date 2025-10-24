@@ -140,9 +140,10 @@ def demonstrate_formative_narrative_arc():
             print(f"  Count: {pre_crisis_formative_count} → {post_crisis_formative_count}")
 
             latest_formative = agent1.persistent_self.formative_experiences[-1]
-            print(f"  Timestamp: {latest_formative['timestamp']:.2f}")
-            print(f"  PN: {latest_formative['pn_value']:.4f}")
-            print(f"  Trigger: {latest_formative['user_input'][:50]}...")
+            print(f"  Timestamp: {latest_formative.timestamp:.2f}")
+            print(f"  Type: {latest_formative.experience_type}")
+            print(f"  Description: {latest_formative.description[:50]}...")
+            print(f"  Impact Score: {latest_formative.impact_score:.4f}")
         else:
             print(f"\n⚠ Crisis not severe enough (PN={crisis_pn:.4f})")
 
