@@ -246,18 +246,19 @@ State: {state}
         if not values:
             return "▁" * width
 
-        # Take last `width` values
-        if len(values) > width:
-            values = values[-width:]
+        # Convert deque to list and take last `width` values
+        values_list = list(values)
+        if len(values_list) > width:
+            values_list = values_list[-width:]
 
         # Normalize to 0-7 range for block characters
-        min_val = min(values)
-        max_val = max(values)
+        min_val = min(values_list)
+        max_val = max(values_list)
         value_range = max_val - min_val if max_val > min_val else 1.0
 
         blocks = " ▁▂▃▄▅▆▇█"
         sparkline = ""
-        for val in values:
+        for val in values_list:
             normalized = (val - min_val) / value_range
             block_idx = int(normalized * 8)
             block_idx = min(block_idx, 8)  # Clamp to max
