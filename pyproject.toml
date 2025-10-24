@@ -30,6 +30,9 @@ dependencies = [
     "numpy",
     "mpmath",
     "textual",
+    "prompt_toolkit",
+    "rich",
+    "click",
 ]
 
 [project.optional-dependencies]
