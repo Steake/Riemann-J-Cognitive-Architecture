@@ -172,7 +172,38 @@ pip install riemann-j
 
 ## 🏃 Quick Start
 
-### Using the provided scripts (Recommended)
+### Interactive CLI (Recommended)
+
+The new CLI provides a rich interactive interface with real-time introspection:
+
+```bash
+# Start the interactive CLI
+riemann-j
+
+# Or with custom identity
+riemann-j --identity my_agent
+
+# Load a previous session
+riemann-j --session sessions/my_session.json
+
+# Plain text mode (no colors)
+riemann-j --no-color
+
+# See all options
+riemann-j --help
+```
+
+**CLI Features**:
+- 🎨 Rich terminal formatting with color-coded uncertainty states
+- 📊 Real-time PN sparkline visualization
+- 💾 Session save/load functionality
+- 🧠 Meta-cognitive commands (`/introspect`, `/identity`, `/stats`)
+- 📝 Multi-line input support
+- 🔍 Explain past behavior with `/explain`
+
+See [`docs/CLI_USER_GUIDE.md`](docs/CLI_USER_GUIDE.md) for complete documentation.
+
+### Using the provided scripts
 
 ```bash
 # Linux/macOS
