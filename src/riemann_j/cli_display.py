@@ -246,19 +246,28 @@ State: {state}
         if not values:
             return "▁" * width
 
-        # Convert deque to list and take last `width` values
+        # Convert deque to list and extract numeric values
+        # PN history contains dicts: {"value": float, "timestamp": float}
         values_list = list(values)
         if len(values_list) > width:
             values_list = values_list[-width:]
 
+        # Extract numeric values (handle both dict format and raw floats)
+        numeric_values = []
+        for v in values_list:
+            if isinstance(v, dict):
+                numeric_values.append(v.get("value", 0.0))
+            else:
+                numeric_values.append(float(v))
+
         # Normalize to 0-7 range for block characters
-        min_val = min(values_list)
-        max_val = max(values_list)
+        min_val = min(numeric_values)
+        max_val = max(numeric_values)
         value_range = max_val - min_val if max_val > min_val else 1.0
 
         blocks = " ▁▂▃▄▅▆▇█"
         sparkline = ""
-        for val in values_list:
+        for val in numeric_values:
             normalized = (val - min_val) / value_range
             block_idx = int(normalized * 8)
             block_idx = min(block_idx, 8)  # Clamp to max
